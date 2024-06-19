@@ -1,56 +1,14 @@
 import {
+  $,
   component$,
   useComputed$,
   useSignal,
-  useTask$,
+  useVisibleTask$,
 } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
+import EventModal from "~/components/EventModal";
 import Avatar from "~/media/user.png?jsx";
-import { isServer } from "@builder.io/qwik/build";
-type TEvent = {
-  id: number;
-  name: string;
-  description: string;
-  startsOn: string;
-  endsOn: string;
-  city: string;
-  neighborhood: string;
-  address: string;
-  number: string;
-  country: string;
-  postalCode: string;
-  region: string;
-  placeName: string;
-  ticketUrl: string | null;
-  complement: string;
-  instagramUsername: string;
-  phoneNumber: string;
-  geoLocation: string;
-  media: {
-    id: number;
-    type: string;
-    fileName: string;
-    url: string;
-  }[];
-  categories: string[];
-  tags: string[];
-  user: {
-    id: number;
-    email: string;
-    firstName: string;
-    lastName: string;
-    nickname: string;
-    createdAt: string;
-    updatedAt: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-  userId: number;
-  _esMeta: {
-    sort: [number, string];
-  };
-  score: number;
-};
+import type { TEvent } from "~/types";
 
 export const useEvents = routeLoader$(async () => {
   const response = await fetch("https://api.vamoo.la/v1/events");
@@ -79,24 +37,91 @@ function viaDate(dateString: string) {
 
 export default component$(() => {
   const eventsRef = useSignal<HTMLDivElement>();
-  const events = useEvents();
+
+  const showModal = useSignal(false);
+
+  const initialEvents = useEvents();
+
+  const isLoading = useSignal(false);
+
+  const events = useSignal<TEvent[]>(initialEvents.value);
+
+  const previewEvent = useSignal(
+    events.value.length > 0 ? events.value[0] : null,
+  );
 
   const categories = useComputed$(() => [
     ...new Set(events.value.flatMap((event) => event.categories)),
   ]);
 
-  useTask$(() => {
-    if (isServer) {
-      return;
+  const loadEvents = $(async () => {
+    const url = new URL("https://api.vamoo.la/v1/events");
+
+    if (events.value.length) {
+      const lastEvent = events.value[events.value.length - 1];
+
+      for (const value of lastEvent._esMeta.sort) {
+        url.searchParams.append("search_after[]", value.toString());
+      }
     }
 
-    console.log("alaaa", eventsRef);
+    const response = await fetch(url);
+
+    const data = await response.json();
+
+    return data.details.results as TEvent[];
+  });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    track(() => eventsRef.value);
+
+    const observeLastChild = () => {
+      if (!eventsRef.value) return;
+
+      const lastChild = eventsRef.value.lastElementChild;
+
+      if (lastChild) {
+        observer.observe(lastChild);
+      }
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach(async (entry) => {
+        if (entry.isIntersecting) {
+          try {
+            isLoading.value = true;
+            const newEvents = await loadEvents();
+
+            if (!newEvents.length) {
+              isLoading.value = false;
+
+              return;
+            }
+
+            events.value = [...events.value, ...newEvents];
+
+            observer.unobserve(entry.target);
+            observeLastChild();
+          } catch (err) {
+            console.log(err);
+          } finally {
+            isLoading.value = false;
+          }
+        }
+      });
+    });
+
+    observeLastChild();
+    cleanup(() => {
+      observer.disconnect();
+    });
   });
 
   return (
     <div class="mx-auto grid grid-cols-1 gap-10 overflow-hidden md:h-screen md:grid-cols-[16%,1fr,16%] xl:max-w-[1340px]">
       <aside class="">
-        CATEGORIES
+        <p class="text-2xl font-bold">Categorias</p>
         {categories.value.map((category, index) => (
           <p key={index}>{category}</p>
         ))}
@@ -104,15 +129,22 @@ export default component$(() => {
       <main class="md:h-full md:overflow-hidden">
         <div class="rounded-2xl border px-2 py-5"></div>
 
-        <div class="md:h-full md:overflow-y-auto md:px-3">
+        <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
           <p class="mb-5 text-xl">
             <strong class="text-[#ff7400]">{events.value.length}</strong>{" "}
             Eventos encontrados
           </p>
 
-          <div ref={eventsRef} class=" space-y-10 ">
+          <div ref={eventsRef} class="space-y-10 ">
             {events.value.map((event, index) => (
-              <div key={index} class="rounded-2xl border shadow-lg">
+              <div
+                key={`${event.id}-${index}`}
+                class="rounded-2xl border shadow-lg"
+                onClick$={() => {
+                  previewEvent.value = event;
+                  showModal.value = true;
+                }}
+              >
                 <div class="flex items-center gap-2 p-5">
                   <div class="rounded-full bg-[#e0e0e0] p-2">
                     <Avatar class="size-8" />
@@ -135,10 +167,11 @@ export default component$(() => {
                     </span>
                   </div>
                   <img
-                    class="mx-auto w-3/4       "
+                    class="mx-auto w-3/4 "
                     height={500}
                     width={500}
                     src={event.media[0].url}
+                    loading="lazy"
                     alt=""
                   />
                 </div>
@@ -171,7 +204,7 @@ export default component$(() => {
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        class="size-6 pointer-events-none"
+                        class="pointer-events-none size-6"
                         viewBox="0 0 24 24"
                       >
                         <path
@@ -186,7 +219,7 @@ export default component$(() => {
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        class="size-6 pointer-events-none"
+                        class="pointer-events-none size-6"
                         viewBox="0 0 512 512"
                       >
                         <path
@@ -211,9 +244,24 @@ export default component$(() => {
               </div>
             ))}
           </div>
+          {isLoading.value && (
+            <div class="flex items-center justify-center pb-20 pt-10">
+              <div class="h-16 w-16 animate-[spin_2s_linear_infinite] rounded-full border-4 border-dashed border-gray-300"></div>
+            </div>
+          )}
         </div>
+        {/* modal */}
+        {previewEvent.value && (
+          <EventModal
+            show={showModal}
+            onCloseModal$={() => {
+              showModal.value = false;
+            }}
+            event={previewEvent.value}
+          />
+        )}
       </main>
-      <aside class="">ADS</aside>
+      <aside class=""></aside>
     </div>
   );
 });
