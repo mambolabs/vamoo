@@ -119,7 +119,7 @@ export default component$(() => {
   });
 
   return (
-    <div class="mx-auto grid grid-cols-1 gap-10 overflow-hidden md:h-screen md:grid-cols-[16%,1fr,16%] xl:max-w-[1340px]">
+    <div class="mx-auto grid grid-cols-1 gap-10 overflow-hidden md:h-screen md:grid-cols-[16%,1fr,16%] lg:px-5 xl:max-w-[1340px] 2xl:px-0">
       <aside class="">
         <p class="text-2xl font-bold">Categorias</p>
         {categories.value.map((category, index) => (
@@ -127,7 +127,7 @@ export default component$(() => {
         ))}
       </aside>
       <main class="md:h-full md:overflow-hidden">
-        <div class="rounded-2xl border px-2 py-5"></div>
+        <div class="rounded-2xl  px-2 py-5"></div>
 
         <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
           <p class="mb-5 text-xl">
