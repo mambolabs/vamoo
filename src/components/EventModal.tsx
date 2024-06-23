@@ -11,10 +11,6 @@ import Avatar from "~/media/user.png?jsx";
 import type { TEvent } from "~/types";
 import { isServer } from "@builder.io/qwik/build";
 
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-
 import Swiper from "swiper";
 import { Navigation, Pagination } from "swiper/modules";
 

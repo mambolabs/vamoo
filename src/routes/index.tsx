@@ -1,14 +1,14 @@
-import {
-  $,
-  component$,
-  useComputed$,
-  useSignal,
-  useVisibleTask$,
-} from "@builder.io/qwik";
+import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
 import EventModal from "~/components/EventModal";
+import Filter from "~/components/Filter";
+import { useFilter } from "~/hooks/useFilter";
 import Avatar from "~/media/user.png?jsx";
 import type { TEvent } from "~/types";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 export const useEvents = routeLoader$(async () => {
   const response = await fetch("https://api.vamoo.la/v1/events");
@@ -50,9 +50,12 @@ export default component$(() => {
     events.value.length > 0 ? events.value[0] : null,
   );
 
-  const categories = useComputed$(() => [
-    ...new Set(events.value.flatMap((event) => event.categories)),
-  ]);
+  // const categories = useComputed$(() => [
+  //   ...new Set(events.value.flatMap((event) => event.categories)),
+  // ]);
+
+  const { categories, filteredEvents, filterCategories, filterTags } =
+    useFilter(events);
 
   const loadEvents = $(async () => {
     const url = new URL("https://api.vamoo.la/v1/events");
@@ -126,8 +129,12 @@ export default component$(() => {
           <p key={index}>{category}</p>
         ))}
       </aside>
-      <main class="md:h-full md:overflow-hidden">
-        <div class="rounded-2xl  px-2 py-5"></div>
+      <main class="pt-2 md:h-full md:overflow-hidden">
+        <Filter
+          categories={categories}
+          filterTags={filterTags}
+          filterCategories={filterCategories}
+        />
 
         <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
           <p class="mb-5 text-xl">
