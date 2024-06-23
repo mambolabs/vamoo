@@ -1,45 +1,14 @@
-import type { QRL, Signal } from "@builder.io/qwik";
-import {
-  $,
-  component$,
-  useComputed$,
-  useSignal,
-  useTask$,
-  type PropsOf,
-} from "@builder.io/qwik";
+import { $, component$, useComputed$, useTask$ } from "@builder.io/qwik";
 import Avatar from "~/media/user.png?jsx";
 import type { TEvent } from "~/types";
 import { isServer } from "@builder.io/qwik/build";
 
 import Swiper from "swiper";
 import { Navigation, Pagination } from "swiper/modules";
+import { Modal, type ModalProps } from "./common/Modal";
 
-export type ModalProps = {
-  event: TEvent;
-  show?: Signal<boolean>;
-  onCloseModal$?: QRL<() => void>;
-} & Omit<PropsOf<"dialog">, "ref">;
-
-export default component$<ModalProps>(
-  ({ event, show, onCloseModal$, ...props }) => {
-    const modalRef = useSignal<HTMLDialogElement>();
-
-    const handleClose = $(function () {
-      onCloseModal$?.();
-    });
-
-    useTask$(function toggleModal({ track }) {
-      const isOpen = track(() => show?.value);
-
-      if (!modalRef.value) return;
-
-      if (isOpen) {
-        modalRef.value.showModal();
-      } else {
-        modalRef.value.close();
-      }
-    });
-
+export default component$<ModalProps & { event: TEvent }>(
+  ({ event, open, onClose$, onOpen$ }) => {
     const formatEventDates = $((date: Date) => {
       if (isNaN(date.getTime())) {
         return "";
@@ -67,9 +36,10 @@ export default component$<ModalProps>(
     });
 
     return (
-      <dialog
-        {...props}
-        ref={modalRef}
+      <Modal
+        open={open}
+        onOpen$={onOpen$}
+        onClose$={onClose$}
         class="h-full w-full [scrollbar-width:none] backdrop:bg-black/50 max-lg:!max-h-[100%] max-lg:!max-w-[100%]  lg:h-4/5 lg:w-[45%] lg:rounded-2xl"
       >
         <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
@@ -77,8 +47,7 @@ export default component$<ModalProps>(
             <button
               type="button"
               onClick$={() => {
-                modalRef.value?.close();
-                handleClose();
+                open.value = false;
               }}
             >
               <svg
@@ -97,8 +66,7 @@ export default component$<ModalProps>(
           <button
             type="button"
             onClick$={() => {
-              modalRef.value?.close();
-              handleClose();
+              open.value = false;
             }}
           >
             <svg
@@ -331,7 +299,7 @@ export default component$<ModalProps>(
             </div>
           </div>
         </div>
-      </dialog>
+      </Modal>
     );
   },
 );
@@ -343,7 +311,7 @@ const ImageSlider = component$<{ media: TEvent["media"] }>((props) => {
         return;
       }
 
-      const swiperInstance = new Swiper(".images-slider", {
+      const swiperInstance = new Swiper("#images-slider", {
         modules: [Navigation, Pagination],
         pagination: {
           el: ".swiper-pagination",
@@ -373,7 +341,10 @@ const ImageSlider = component$<{ media: TEvent["media"] }>((props) => {
   );
 
   return (
-    <div class="swiper images-slider [--swiper-navigation-color:#ff7400] [--swiper-navigation-sides-offset:30px] [--swiper-navigation-size:35px] [--swiper-pagination-bullet-inactive-color:#f5f5f5] [--swiper-pagination-bullet-inactive-opacity:1] [--swiper-pagination-bullet-size:12px] [--swiper-pagination-color:#ff7400]">
+    <div
+      id="images-slider"
+      class="swiper  [--swiper-navigation-color:#ff7400] [--swiper-navigation-sides-offset:30px] [--swiper-navigation-size:35px] [--swiper-pagination-bullet-inactive-color:#f5f5f5] [--swiper-pagination-bullet-inactive-opacity:1] [--swiper-pagination-bullet-size:12px] [--swiper-pagination-color:#ff7400]"
+    >
       <div class="swiper-wrapper">
         {props.media.map((image) => (
           <div class="swiper-slide" key={image.id}>

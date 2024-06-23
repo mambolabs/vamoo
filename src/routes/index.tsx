@@ -1,4 +1,4 @@
-import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { $, component$, useSignal, useTask$ } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
 import EventModal from "~/components/EventModal";
 import Filter from "~/components/Filter";
@@ -9,6 +9,7 @@ import type { TEvent } from "~/types";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { isServer } from "@builder.io/qwik/build";
 
 export const useEvents = routeLoader$(async () => {
   const response = await fetch("https://api.vamoo.la/v1/events");
@@ -50,10 +51,6 @@ export default component$(() => {
     events.value.length > 0 ? events.value[0] : null,
   );
 
-  // const categories = useComputed$(() => [
-  //   ...new Set(events.value.flatMap((event) => event.categories)),
-  // ]);
-
   const { categories, filteredEvents, filterCategories, filterTags } =
     useFilter(events);
 
@@ -75,51 +72,54 @@ export default component$(() => {
     return data.details.results as TEvent[];
   });
 
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track, cleanup }) => {
-    track(() => eventsRef.value);
+  useTask$(
+    ({ track, cleanup }) => {
+      if (isServer) return;
+      track(() => eventsRef.value);
 
-    const observeLastChild = () => {
-      if (!eventsRef.value) return;
+      const observeLastChild = () => {
+        if (!eventsRef.value) return;
 
-      const lastChild = eventsRef.value.lastElementChild;
+        const lastChild = eventsRef.value.lastElementChild;
 
-      if (lastChild) {
-        observer.observe(lastChild);
-      }
-    };
-
-    const observer = new IntersectionObserver((entries, observer) => {
-      entries.forEach(async (entry) => {
-        if (entry.isIntersecting) {
-          try {
-            isLoading.value = true;
-            const newEvents = await loadEvents();
-
-            if (!newEvents.length) {
-              isLoading.value = false;
-
-              return;
-            }
-
-            events.value = [...events.value, ...newEvents];
-
-            observer.unobserve(entry.target);
-            observeLastChild();
-          } catch (err) {
-            console.log(err);
-          } finally {
-            isLoading.value = false;
-          }
+        if (lastChild) {
+          observer.observe(lastChild);
         }
-      });
-    });
+      };
 
-    observeLastChild();
-    cleanup(() => {
-      observer.disconnect();
-    });
-  });
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(async (entry) => {
+          if (entry.isIntersecting) {
+            try {
+              isLoading.value = true;
+              const newEvents = await loadEvents();
+
+              if (!newEvents.length) {
+                isLoading.value = false;
+
+                return;
+              }
+
+              events.value = [...events.value, ...newEvents];
+
+              observer.unobserve(entry.target);
+              observeLastChild();
+            } catch (err) {
+              console.log(err);
+            } finally {
+              isLoading.value = false;
+            }
+          }
+        });
+      });
+
+      observeLastChild();
+      cleanup(() => {
+        observer.disconnect();
+      });
+    },
+    { eagerness: "visible" },
+  );
 
   return (
     <div class="mx-auto grid grid-cols-1 gap-10 overflow-hidden md:h-screen md:grid-cols-[16%,1fr,16%] lg:px-5 xl:max-w-[1340px] 2xl:px-0">
@@ -260,8 +260,8 @@ export default component$(() => {
         {/* modal */}
         {previewEvent.value && (
           <EventModal
-            show={showModal}
-            onCloseModal$={() => {
+            open={showModal}
+            onClose$={() => {
               showModal.value = false;
             }}
             event={previewEvent.value}

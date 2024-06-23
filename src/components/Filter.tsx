@@ -12,6 +12,8 @@ import Swiper from "swiper";
 import { Navigation } from "swiper/modules";
 import RangeInput from "./range-input/RangeInput";
 import Calendar from "./Calendar";
+import { Modal } from "./common/Modal";
+import { isServer } from "@builder.io/qwik/build";
 
 type FilterProps = {
   categories: Signal<string[]>;
@@ -23,7 +25,7 @@ export default component$<FilterProps>(
   ({ categories, filterTags, filterCategories }) => {
     const swiperElRef = useSignal<HTMLDivElement>();
 
-    const filterModalRef = useSignal<HTMLDialogElement>();
+    const showFilterModal = useSignal(false);
 
     const newTagInputRef = useSignal<HTMLInputElement>();
 
@@ -39,7 +41,7 @@ export default component$<FilterProps>(
       localFilterCategories.value = filterCategories.value;
       localFilterTags.value = filterTags.value;
 
-      filterModalRef.value?.close();
+      showFilterModal.value = false;
     });
 
     const addTag = $(() => {
@@ -63,46 +65,53 @@ export default component$<FilterProps>(
       handleClose();
     });
 
-    useTask$(function ({ cleanup }) {
-      if (!swiperElRef.value) {
-        return;
-      }
+    useTask$(
+      ({ cleanup }) => {
+        if (isServer) {
+          return;
+        }
 
-      filterModalRef.value?.close();
+        const swiperInstance = new Swiper("#filter-slider", {
+          modules: [Navigation],
+          slidesPerView: 1,
+        });
 
-      const swiperInstance = new Swiper(swiperElRef.value, {
-        modules: [Navigation],
-        slidesPerView: 1,
-      });
+        switch (filterView.value) {
+          case "tags":
+            swiperInstance.slideTo(0);
+            break;
+          case "location":
+            swiperInstance.slideTo(1);
+            break;
+          case "time":
+            swiperInstance.slideTo(2);
+            break;
+        }
 
-      switch (filterView.value) {
-        case "tags":
-          swiperInstance.slideTo(0);
-          break;
-        case "location":
-          swiperInstance.slideTo(1);
-          break;
-        case "time":
-          swiperInstance.slideTo(2);
-          break;
-      }
-
-      cleanup(() => swiperInstance.destroy());
-    });
+        cleanup(() => swiperInstance.destroy());
+      },
+      {
+        eagerness: "visible",
+      },
+    );
 
     return (
-      <div>
+      <>
         <div class="flex items-center justify-between  gap-5 rounded-2xl border px-3 py-3">
           <div></div>
           <div class="flex items-center gap-5">
             <button
               type="button"
               class="rounded-full bg-black px-5 py-1.5 text-white "
-              onClick$={handleClose}
+              onClick$={() => {
+                filterView.value = "tags";
+
+                showFilterModal.value = true;
+              }}
             >
               Filtros
             </button>
-            <button type="button" onClick$={handleClose}>
+            <button type="button" onClick$={() => {}}>
               <svg
                 class="h-8 w-auto stroke-[1.2px]"
                 xmlns="http://www.w3.org/2000/svg"
@@ -116,368 +125,369 @@ export default component$<FilterProps>(
             </button>
           </div>
         </div>
-        <dialog
-          ref={filterModalRef}
-          class="flex h-full w-full flex-col [scrollbar-width:none] backdrop:bg-black/50 max-lg:!max-h-[100%] max-lg:!max-w-[100%] lg:h-4/5 lg:w-[35%] lg:rounded-2xl"
+
+        <Modal
+          open={showFilterModal}
+          onClose$={() => {
+            showFilterModal.value = false;
+          }}
+          class="h-full w-full [scrollbar-width:none] backdrop:bg-black/50 max-lg:!max-h-[100%] max-lg:!max-w-[100%] lg:h-4/5 lg:w-[35%] lg:rounded-2xl"
         >
-          <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
-            <p class="text-xl font-semibold">Filtros</p>
-            <button
-              type="button"
-              onClick$={() => {
-                filterModalRef.value?.close();
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="size-6"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="currentColor"
-                  d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <div class="relative isolate shadow-md">
-            <div class="flex items-center justify-around py-3">
-              <Button
-                isActive={filterView.value === "tags"}
-                onClick$={() => {
-                  filterView.value = "tags";
-
-                  const swiper = (swiperElRef.value as any).swiper as
-                    | Swiper
-                    | undefined;
-
-                  if (!swiper) return;
-
-                  swiper.slideTo(0);
-                }}
-              >
+          <div class="flex flex-col">
+            <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
+              <p class="text-xl font-semibold">Filtros</p>
+              <button type="button" onClick$={handleClose}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  class="h-7 w-auto"
-                  viewBox="0 0 448 512"
+                  class="size-6"
+                  viewBox="0 0 24 24"
                 >
                   <path
                     fill="currentColor"
-                    d="M181.3 32.4c17.4 2.9 29.2 19.4 26.3 36.8l-9.8 58.8h95.1l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3s29.2 19.4 26.3 36.8l-9.7 58.8H416c17.7 0 32 14.3 32 32s-14.3 32-32 32h-68.9l-21.3 128H384c17.7 0 32 14.3 32 32s-14.3 32-32 32h-68.9l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8l9.8-58.7h-95.2l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8l9.7-58.9H32c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l21.3-128H64c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3zm5.8 159.6l-21.3 128h95.1l21.3-128z"
+                    d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"
                   />
                 </svg>
-              </Button>
-
-              <Button
-                isActive={filterView.value === "location"}
-                onClick$={() => {
-                  filterView.value = "location";
-
-                  const swiper = (swiperElRef.value as any).swiper as
-                    | Swiper
-                    | undefined;
-
-                  if (!swiper) return;
-
-                  swiper.slideTo(1);
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-7 w-auto"
-                  viewBox="0 0 32 32"
-                >
-                  <g
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                  >
-                    <circle cx="16" cy="11" r="4" />
-                    <path d="M24 15c-3 7-8 15-8 15s-5-8-8-15s2-13 8-13s11 6 8 13" />
-                  </g>
-                </svg>
-              </Button>
-
-              <Button
-                isActive={filterView.value === "time"}
-                onClick$={() => {
-                  filterView.value = "time";
-                  const swiper = (swiperElRef.value as any).swiper as
-                    | Swiper
-                    | undefined;
-
-                  if (!swiper) return;
-
-                  swiper.slideTo(2);
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-7 w-auto"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M10 0c5.523 0 10 4.477 10 10s-4.477 10-10 10S0 15.523 0 10S4.477 0 10 0m0 1.395a8.605 8.605 0 1 0 0 17.21a8.605 8.605 0 0 0 0-17.21m-.93 4.186c.385 0 .697.313.697.698v4.884h4.884a.698.698 0 0 1 0 1.395H9.07a.698.698 0 0 1-.698-.698V6.28c0-.386.312-.699.698-.699"
-                  />
-                </svg>
-              </Button>
+              </button>
             </div>
 
-            <hr class="absolute left-0 top-1/2 -z-[1] h-px w-full border-0 bg-[#ebe0dc]" />
-          </div>
+            <div class="relative isolate shadow-md">
+              <div class="flex items-center justify-around py-3">
+                <Button
+                  isActive={filterView.value === "tags"}
+                  onClick$={() => {
+                    filterView.value = "tags";
 
-          <div class="flex-1 bg-[#fafafa]  ">
-            <div ref={swiperElRef} class="swiper">
-              <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                  <div class="h-full  space-y-6 px-5 py-6">
-                    <div class="space-y-2">
-                      <p class="text-xl font-bold">Categorias</p>
-                      <p>
-                        Filtre ate <strong>3 categorias</strong>
-                      </p>
+                    const swiper = (swiperElRef.value as any).swiper as
+                      | Swiper
+                      | undefined;
 
-                      <div class="flex flex-wrap gap-2">
-                        {categories.value.map((category) => {
-                          const isInFilter =
-                            localFilterCategories.value.includes(category);
+                    if (!swiper) return;
 
-                          return (
-                            <button
-                              type="button"
-                              onClick$={() => {
-                                if (isInFilter) {
-                                  localFilterCategories.value =
-                                    localFilterCategories.value.filter(
-                                      (cat) => cat !== category,
-                                    );
+                    swiper.slideTo(0);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-7 w-auto"
+                    viewBox="0 0 448 512"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M181.3 32.4c17.4 2.9 29.2 19.4 26.3 36.8l-9.8 58.8h95.1l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3s29.2 19.4 26.3 36.8l-9.7 58.8H416c17.7 0 32 14.3 32 32s-14.3 32-32 32h-68.9l-21.3 128H384c17.7 0 32 14.3 32 32s-14.3 32-32 32h-68.9l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8l9.8-58.7h-95.2l-11.5 69.3c-2.9 17.4-19.4 29.2-36.8 26.3s-29.2-19.4-26.3-36.8l9.7-58.9H32c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l21.3-128H64c-17.7 0-32-14.3-32-32s14.3-32 32-32h68.9l11.5-69.3c2.9-17.4 19.4-29.2 36.8-26.3zm5.8 159.6l-21.3 128h95.1l21.3-128z"
+                    />
+                  </svg>
+                </Button>
 
-                                  return;
-                                }
+                <Button
+                  isActive={filterView.value === "location"}
+                  onClick$={() => {
+                    filterView.value = "location";
 
-                                localFilterCategories.value = [
-                                  ...new Set([
-                                    ...localFilterCategories.value,
-                                    category,
-                                  ]),
-                                ];
-                              }}
-                              key={category}
-                            >
-                              <span
+                    const swiper = (swiperElRef.value as any).swiper as
+                      | Swiper
+                      | undefined;
+
+                    if (!swiper) return;
+
+                    swiper.slideTo(1);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-7 w-auto"
+                    viewBox="0 0 32 32"
+                  >
+                    <g
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                    >
+                      <circle cx="16" cy="11" r="4" />
+                      <path d="M24 15c-3 7-8 15-8 15s-5-8-8-15s2-13 8-13s11 6 8 13" />
+                    </g>
+                  </svg>
+                </Button>
+
+                <Button
+                  isActive={filterView.value === "time"}
+                  onClick$={() => {
+                    filterView.value = "time";
+                    const swiper = (swiperElRef.value as any).swiper as
+                      | Swiper
+                      | undefined;
+
+                    if (!swiper) return;
+
+                    swiper.slideTo(2);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-7 w-auto"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M10 0c5.523 0 10 4.477 10 10s-4.477 10-10 10S0 15.523 0 10S4.477 0 10 0m0 1.395a8.605 8.605 0 1 0 0 17.21a8.605 8.605 0 0 0 0-17.21m-.93 4.186c.385 0 .697.313.697.698v4.884h4.884a.698.698 0 0 1 0 1.395H9.07a.698.698 0 0 1-.698-.698V6.28c0-.386.312-.699.698-.699"
+                    />
+                  </svg>
+                </Button>
+              </div>
+
+              <hr class="absolute left-0 top-1/2 -z-[1] h-px w-full border-0 bg-[#ebe0dc]" />
+            </div>
+
+            <div class="flex-1 bg-[#fafafa]  ">
+              <div ref={swiperElRef} id="filter-slider" class="swiper">
+                <div class="swiper-wrapper">
+                  <div class="swiper-slide">
+                    <div class="h-full  space-y-6 px-5 py-6">
+                      <div class="space-y-2">
+                        <p class="text-xl font-bold">Categorias</p>
+                        <p>
+                          Filtre ate <strong>3 categorias</strong>
+                        </p>
+
+                        <div class="flex flex-wrap gap-2">
+                          {categories.value.map((category) => {
+                            const isInFilter =
+                              localFilterCategories.value.includes(category);
+
+                            return (
+                              <button
+                                type="button"
+                                onClick$={() => {
+                                  if (isInFilter) {
+                                    localFilterCategories.value =
+                                      localFilterCategories.value.filter(
+                                        (cat) => cat !== category,
+                                      );
+
+                                    return;
+                                  }
+
+                                  localFilterCategories.value = [
+                                    ...new Set([
+                                      ...localFilterCategories.value,
+                                      category,
+                                    ]),
+                                  ];
+                                }}
                                 key={category}
-                                class={[
-                                  "rounded-full border bg-black px-4 py-1 text-sm font-semibold text-white",
-                                  isInFilter ? "opacity-100" : "opacity-40",
-                                ]}
                               >
-                                {category}
-                              </span>
-                            </button>
-                          );
-                        })}
+                                <span
+                                  key={category}
+                                  class={[
+                                    "rounded-full border bg-black px-4 py-1 text-sm font-semibold text-white",
+                                    isInFilter ? "opacity-100" : "opacity-40",
+                                  ]}
+                                >
+                                  {category}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
 
-                    <div class="space-y-2">
-                      <p class="text-xl font-bold">Tags</p>
-                      <p>
-                        Filtre ate <strong>5 tags</strong>
-                      </p>
+                      <div class="space-y-2">
+                        <p class="text-xl font-bold">Tags</p>
+                        <p>
+                          Filtre ate <strong>5 tags</strong>
+                        </p>
 
-                      <div class="relative text-[#9e9e9e] focus-within:text-[#ff7b0d]">
-                        <svg
-                          class="absolute left-2 top-1/2 h-auto w-5 -translate-y-1/2"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0-14 0m18 11l-6-6"
-                          />
-                        </svg>
-
-                        <input
-                          ref={newTagInputRef}
-                          type="text"
-                          class="w-full rounded-lg border-2 border-[#9e9e9e] p-2 px-8 caret-[#ff7b0d] focus:text-[#9e9e9e]  focus:outline-[#ff7b0d]"
-                          placeholder="Adicione uma tag"
-                          name="tag"
-                          onKeyDown$={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              addTag();
-                            }
-                          }}
-                        />
-
-                        <button
-                          type="button"
-                          onClick$={() => addTag()}
-                          class="absolute right-0 top-1/2 flex aspect-square h-full -translate-y-1/2 items-center justify-center rounded-full text-[#9e9e9e] hover:bg-gray-200"
-                        >
+                        <div class="relative text-[#9e9e9e] focus-within:text-[#ff7b0d]">
                           <svg
-                            class="h-auto w-5"
+                            class="absolute left-2 top-1/2 h-auto w-5 -translate-y-1/2"
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                           >
                             <path
-                              fill="currentColor"
-                              d="m4 8.25l7.51 1l-7.5-3.22zm.01 9.72l7.5-3.22l-7.51 1z"
-                              opacity="0.3"
-                            />
-                            <path
-                              fill="currentColor"
-                              d="M2.01 3L2 10l15 2l-15 2l.01 7L23 12zM4 8.25V6.03l7.51 3.22zm.01 9.72v-2.22l7.51-1z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0-14 0m18 11l-6-6"
                             />
                           </svg>
-                        </button>
-                      </div>
 
-                      <div class="flex flex-wrap gap-2">
-                        {localFilterTags.value.map((tag) => (
-                          <div
-                            key={tag}
-                            class="flex items-center gap-1.5 rounded-full border border-[#858585] px-3 py-1"
-                          >
-                            <span key={tag} class="text-sm font-medium">
-                              <strong>#</strong>
-                              {tag}
-                            </span>
-                            <button
-                              type="button"
-                              onClick$={() => {
-                                localFilterTags.value =
-                                  localFilterTags.value.filter(
-                                    (t) => t !== tag,
-                                  );
-                              }}
-                            >
-                              <svg
-                                class="h-auto w-4"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 32 32"
-                              >
-                                <path
-                                  fill="currentColor"
-                                  d="M16 2C8.2 2 2 8.2 2 16s6.2 14 14 14s14-6.2 14-14S23.8 2 16 2m0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12s-5.4 12-12 12"
-                                />
-                                <path
-                                  fill="currentColor"
-                                  d="M21.4 23L16 17.6L10.6 23L9 21.4l5.4-5.4L9 10.6L10.6 9l5.4 5.4L21.4 9l1.6 1.6l-5.4 5.4l5.4 5.4z"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="swiper-slide">
-                  <div class="h-full  space-y-6 px-5 py-6">
-                    <div class="space-y-2">
-                      <p class="text-xl font-bold">Onde?</p>
-                      <p>Selecione onde voce quer procurar</p>
-
-                      <div class="relative text-[#9e9e9e] focus-within:text-[#ff7b0d]">
-                        <svg
-                          class="absolute left-2 top-1/2 h-auto w-5 -translate-y-1/2"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0-14 0m18 11l-6-6"
+                          <input
+                            ref={newTagInputRef}
+                            type="text"
+                            class="w-full rounded-lg border-2 border-[#9e9e9e] p-2 px-8 caret-[#ff7b0d] focus:text-[#9e9e9e]  focus:outline-[#ff7b0d]"
+                            placeholder="Adicione uma tag"
+                            name="tag"
+                            onKeyDown$={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                addTag();
+                              }
+                            }}
                           />
-                        </svg>
 
-                        <input
-                          type="text"
-                          class="w-full rounded-lg border-2 border-[#9e9e9e] p-2 pl-8 caret-[#ff7b0d] focus:text-[#9e9e9e]  focus:outline-[#ff7b0d]"
-                          name="location"
-                          onKeyDown$={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                            }
-                          }}
-                        />
-                      </div>
+                          <button
+                            type="button"
+                            onClick$={() => addTag()}
+                            class="absolute right-0 top-1/2 flex aspect-square h-full -translate-y-1/2 items-center justify-center rounded-full text-[#9e9e9e] hover:bg-gray-200"
+                          >
+                            <svg
+                              class="h-auto w-5"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                fill="currentColor"
+                                d="m4 8.25l7.51 1l-7.5-3.22zm.01 9.72l7.5-3.22l-7.51 1z"
+                                opacity="0.3"
+                              />
+                              <path
+                                fill="currentColor"
+                                d="M2.01 3L2 10l15 2l-15 2l.01 7L23 12zM4 8.25V6.03l7.51 3.22zm.01 9.72v-2.22l7.51-1z"
+                              />
+                            </svg>
+                          </button>
+                        </div>
 
-                      <div class="flex flex-wrap gap-2"></div>
-                    </div>
-                    <div class="space-y-2">
-                      <p class="text-xl font-bold">Distancia</p>
-                      <p>
-                        Selecione ate qual distancia voce esta disposto a ir
-                      </p>
-
-                      <div class="px-2">
-                        <RangeInput
-                          max={50}
-                          value={localFilterDistance.value}
-                          handleChange={$((value) => {
-                            localFilterDistance.value = value;
-                          })}
-                        />
-
-                        <p class="font-semibold text-[#ff7400]">
-                          {localFilterDistance.value} km
-                        </p>
+                        <div class="flex flex-wrap gap-2">
+                          {localFilterTags.value.map((tag) => (
+                            <div
+                              key={tag}
+                              class="flex items-center gap-1.5 rounded-full border border-[#858585] px-3 py-1"
+                            >
+                              <span key={tag} class="text-sm font-medium">
+                                <strong>#</strong>
+                                {tag}
+                              </span>
+                              <button
+                                type="button"
+                                onClick$={() => {
+                                  localFilterTags.value =
+                                    localFilterTags.value.filter(
+                                      (t) => t !== tag,
+                                    );
+                                }}
+                              >
+                                <svg
+                                  class="h-auto w-4"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 32 32"
+                                >
+                                  <path
+                                    fill="currentColor"
+                                    d="M16 2C8.2 2 2 8.2 2 16s6.2 14 14 14s14-6.2 14-14S23.8 2 16 2m0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12s-5.4 12-12 12"
+                                  />
+                                  <path
+                                    fill="currentColor"
+                                    d="M21.4 23L16 17.6L10.6 23L9 21.4l5.4-5.4L9 10.6L10.6 9l5.4 5.4L21.4 9l1.6 1.6l-5.4 5.4l5.4 5.4z"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div class="swiper-slide">
-                  <div class="h-full  px-5 py-6">
-                    <div class="mx-auto h-full w-4/5 space-y-6">
-                      <div>
-                        <p class="mb-2 text-center text-xl font-bold">
-                          Quando?
-                        </p>
-                        <p class="text-center">
-                          Selecione a partir de qual data voce deseja ver
-                          eventos
-                        </p>
+                  <div class="swiper-slide">
+                    <div class="h-full  space-y-6 px-5 py-6">
+                      <div class="space-y-2">
+                        <p class="text-xl font-bold">Onde?</p>
+                        <p>Selecione onde voce quer procurar</p>
+
+                        <div class="relative text-[#9e9e9e] focus-within:text-[#ff7b0d]">
+                          <svg
+                            class="absolute left-2 top-1/2 h-auto w-5 -translate-y-1/2"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0-14 0m18 11l-6-6"
+                            />
+                          </svg>
+
+                          <input
+                            type="text"
+                            class="w-full rounded-lg border-2 border-[#9e9e9e] p-2 pl-8 caret-[#ff7b0d] focus:text-[#9e9e9e]  focus:outline-[#ff7b0d]"
+                            name="location"
+                            onKeyDown$={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                              }
+                            }}
+                          />
+                        </div>
+
+                        <div class="flex flex-wrap gap-2"></div>
                       </div>
-                      <Calendar />
+                      <div class="space-y-2">
+                        <p class="text-xl font-bold">Distancia</p>
+                        <p>
+                          Selecione ate qual distancia voce esta disposto a ir
+                        </p>
+
+                        <div class="px-2">
+                          <RangeInput
+                            max={50}
+                            value={localFilterDistance.value}
+                            handleChange={$((value) => {
+                              localFilterDistance.value = value;
+                            })}
+                          />
+
+                          <p class="font-semibold text-[#ff7400]">
+                            {localFilterDistance.value} km
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div class="h-full  px-5 py-6">
+                      <div class="mx-auto h-full w-4/5 space-y-6">
+                        <div>
+                          <p class="mb-2 text-center text-xl font-bold">
+                            Quando?
+                          </p>
+                          <p class="text-center">
+                            Selecione a partir de qual data voce deseja ver
+                            eventos
+                          </p>
+                        </div>
+                        <Calendar />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div class="flex items-center justify-center gap-16 bg-white px-5 py-3">
-            <button
-              type="button"
-              onClick$={handleClose}
-              class="rounded-lg border border-[#ff7b0d] px-5 py-1 font-semibold text-[#ff7b0d]"
-            >
-              Fetchar
-            </button>
-            <button
-              type="button"
-              onClick$={applyFilters}
-              class="rounded-lg bg-[#ff7b0d] px-5 py-1 font-semibold text-white"
-            >
-              Ver Eventos
-            </button>
+            <div class="flex items-center justify-center gap-16 bg-white px-5 py-3">
+              <button
+                type="button"
+                onClick$={handleClose}
+                class="rounded-lg border border-[#ff7b0d] px-5 py-1 font-semibold text-[#ff7b0d]"
+              >
+                Fetchar
+              </button>
+              <button
+                type="button"
+                onClick$={applyFilters}
+                class="rounded-lg bg-[#ff7b0d] px-5 py-1 font-semibold text-white"
+              >
+                Ver Eventos
+              </button>
+            </div>
           </div>
-        </dialog>
-      </div>
+        </Modal>
+      </>
     );
   },
 );

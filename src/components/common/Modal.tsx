@@ -1,25 +1,27 @@
-import { component$, useTask$, Slot, useSignal, $ } from "@builder.io/qwik";
+import { component$, useTask$, Slot, useSignal, useId } from "@builder.io/qwik";
 import type { Signal, QRL, PropsOf } from "@builder.io/qwik";
-import { isServer, isBrowser } from "@builder.io/qwik/build";
-interface ModalProps extends Omit<PropsOf<"dialog">, "open"> {
+import { isServer } from "@builder.io/qwik/build";
+export interface ModalProps
+  extends Omit<PropsOf<"dialog">, "open" | "ref" | "id"> {
   open: Signal<boolean>;
   onOpen$?: QRL<() => void>;
-  onClose$?: QRL<() => void>;
 }
 
 export const Modal = component$(
-  ({ onOpen$, onClose$, class: propsClass, open: opened }: ModalProps) => {
-    const ref = useSignal<HTMLDialogElement>();
+  ({ onOpen$, open: opened, ...props }: ModalProps) => {
+    const id = useId();
 
-    const closing = useSignal(false);
+    const ref = useSignal<HTMLDialogElement>();
 
     useTask$(() => {
       if (isServer) return;
 
       const handler = (event: KeyboardEvent) => {
+        console.log("handler:");
+
         if (event.key === "Escape") {
           event.preventDefault();
-          opened.value = false;
+          ref.value?.close();
         }
       };
 
@@ -29,38 +31,20 @@ export const Modal = component$(
     });
 
     useTask$(function ({ track }) {
-      track(() => opened.value);
-      if (isBrowser) {
-        if (!ref.value) return;
-        console.log(opened.value);
-        if (opened.value) {
-          ref.value.showModal();
-          if (onOpen$) onOpen$();
-        } else {
-          closing.value = true;
-          if (onClose$) onClose$();
-          setTimeout(() => {
-            closing.value = false;
-            ref.value?.close();
-          }, 300);
-        }
+      const isOpen = track(() => opened.value);
+
+      if (!ref.value) return;
+
+      if (isOpen) {
+        ref.value.showModal();
+        if (onOpen$) onOpen$();
+      } else {
+        ref.value.close();
       }
     });
 
-    const onClick = $((event: PointerEvent, element: HTMLDialogElement) => {
-      if (event.target === element) opened.value = false;
-    });
-
     return (
-      <dialog
-        class={[
-          propsClass,
-          closing.value && "closing",
-          opened.value ? "opened" : "closed",
-        ]}
-        ref={ref}
-        onClick$={onClick}
-      >
+      <dialog {...props} id={id} ref={ref}>
         <Slot />
       </dialog>
     );
