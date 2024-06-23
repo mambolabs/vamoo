@@ -46,6 +46,7 @@
     "vite-tsconfig-paths": "^4.2.1"
   },
   "dependencies": {
+    "date-fns": "^3.6.0",
     "swiper": "^11.1.4"
   }
 }
