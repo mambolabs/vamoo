@@ -6,6 +6,7 @@ import {
   Slot,
   $,
   useTask$,
+  useComputed$,
 } from "@builder.io/qwik";
 
 import Swiper from "swiper";
@@ -14,19 +15,23 @@ import RangeInput from "./range-input/RangeInput";
 import Calendar from "./Calendar";
 import { Modal } from "./common/Modal";
 import { isServer } from "@builder.io/qwik/build";
-
+import { format, formatRelative, startOfToday } from "date-fns";
+import { pt } from "date-fns/locale";
 type FilterProps = {
   categories: Signal<string[]>;
   filterTags: Signal<string[]>;
   filterCategories: Signal<string[]>;
+  filterMaxDate: Signal<Date>;
 };
 
 const MAX_TAGS = 5;
 
 const MAX_CATEGORIES = 3;
 
+const today = startOfToday();
+
 export default component$<FilterProps>(
-  ({ categories, filterTags, filterCategories }) => {
+  ({ categories, filterTags, filterCategories, filterMaxDate }) => {
     const swiperElRef = useSignal<HTMLDivElement>();
 
     const showFilterModal = useSignal(false);
@@ -37,6 +42,8 @@ export default component$<FilterProps>(
 
     const filterView = useSignal<"time" | "location" | "tags">("tags");
 
+    const localMaxDate = useSignal(filterMaxDate.value);
+
     const localFilterTags = useSignal(filterTags.value);
 
     const localFilterCategories = useSignal(filterCategories.value);
@@ -46,7 +53,6 @@ export default component$<FilterProps>(
     const handleClose = $(() => {
       localFilterCategories.value = filterCategories.value;
       localFilterTags.value = filterTags.value;
-
       showFilterModal.value = false;
     });
 
@@ -66,7 +72,7 @@ export default component$<FilterProps>(
       newTagInputRef.value.value = "";
     });
 
-    const applyFilters = $(() => {
+    const tagsViewFilters = $(() => {
       if (localFilterTags.value.length) {
         filterTags.value = localFilterTags.value;
       } else {
@@ -78,22 +84,58 @@ export default component$<FilterProps>(
       } else {
         filterCategories.value = [];
       }
+    });
 
-      handleClose();
+    const locationFilter = $(() => {
+      console.log("locationFilter");
+    });
+
+    const timeFilter = $(() => {
+      filterMaxDate.value = localMaxDate.value;
+    });
+
+    const applyFilters = $(() => {
+      switch (filterView.value) {
+        case "tags":
+          tagsViewFilters();
+          break;
+        case "location":
+          locationFilter();
+          break;
+        case "time":
+          timeFilter();
+          break;
+      }
+
+      showFilterModal.value = false;
+    });
+
+    const displayDate = useComputed$(() => {
+      const [rel] = formatRelative(filterMaxDate.value, today, {
+        locale: pt,
+      }).split(" ");
+
+      const dateStr = format(filterMaxDate.value, "dd MMM", {
+        locale: pt,
+      });
+
+      return `${rel}, ${dateStr}`;
     });
 
     useTask$(
-      ({ cleanup }) => {
+      ({ cleanup, track }) => {
         if (isServer) {
           return;
         }
+
+        const view = track(() => filterView.value);
 
         const swiperInstance = new Swiper("#filter-slider", {
           modules: [Navigation],
           slidesPerView: 1,
         });
 
-        switch (filterView.value) {
+        switch (view) {
           case "tags":
             swiperInstance.slideTo(0);
             break;
@@ -116,6 +158,28 @@ export default component$<FilterProps>(
       <>
         <div class="flex items-center justify-between  gap-5 rounded-2xl border px-3 py-3">
           <div class="flex flex-wrap gap-2">
+            <button
+              onClick$={() => {
+                filterView.value = "time";
+                showFilterModal.value = true;
+              }}
+              type="button"
+              class="flex items-center gap-1 rounded-full border border-[#0c9d0c] px-4 py-1 text-sm font-semibold text-[#5b5b5b]"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1em"
+                height="1em"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill="#0c9d0c"
+                  d="M19 19H5V8h14m0-5h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-2.47 8.06L15.47 10l-4.88 4.88l-2.12-2.12l-1.06 1.06L10.59 17z"
+                />
+              </svg>
+              {displayDate.value}
+            </button>
+
             {filterCategories.value.map((category, index) => (
               <button
                 key={category + index}
@@ -516,7 +580,12 @@ export default component$<FilterProps>(
                             eventos
                           </p>
                         </div>
-                        <Calendar />
+                        <Calendar
+                          initialDay={localMaxDate}
+                          handleChange={$((date) => {
+                            localMaxDate.value = date;
+                          })}
+                        />
                       </div>
                     </div>
                   </div>
@@ -542,6 +611,7 @@ export default component$<FilterProps>(
             </div>
           </div>
         </Modal>
+
         <Modal
           open={showRelevanceFilterModal}
           onClose$={() => {
