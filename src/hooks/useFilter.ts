@@ -6,6 +6,7 @@ import {
 } from "@builder.io/qwik";
 import { startOfToday } from "date-fns";
 import { type TEvent } from "~/types";
+import { useGeolocation } from "./useGeolocation";
 
 export function useFilter(events: Signal<TEvent[]>) {
   const filteredEvents = useSignal(events.value);
@@ -19,6 +20,8 @@ export function useFilter(events: Signal<TEvent[]>) {
   const categories = useComputed$(() => [
     ...new Set(events.value.flatMap((event) => event.categories)),
   ]);
+
+  const loc = useGeolocation();
 
   useTask$(({ track }) => {
     const tags = track(() => filterTags.value);
