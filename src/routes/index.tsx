@@ -1,4 +1,10 @@
-import { $, component$, useSignal, useTask$ } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  useComputed$,
+  useSignal,
+  useTask$,
+} from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
 import EventModal from "~/components/EventModal";
 import Filter from "~/components/Filter";
@@ -53,6 +59,10 @@ export default component$(() => {
 
   const { categories, filteredEvents, filterCategories, filterTags } =
     useFilter(events);
+
+  const hasFilters = useComputed$(
+    () => filterCategories.value.length > 0 || filterTags.value.length > 0,
+  );
 
   const loadEvents = $(async () => {
     const url = new URL("https://api.vamoo.la/v1/events");
@@ -138,12 +148,14 @@ export default component$(() => {
 
         <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
           <p class="mb-5 text-xl">
-            <strong class="text-[#ff7400]">{events.value.length}</strong>{" "}
+            <strong class="text-[#ff7400]">
+              {filteredEvents.value.length}
+            </strong>{" "}
             Eventos encontrados
           </p>
 
           <div ref={eventsRef} class="space-y-10 ">
-            {events.value.map((event, index) => (
+            {filteredEvents.value.map((event, index) => (
               <div
                 key={`${event.id}-${index}`}
                 class="rounded-2xl border shadow-lg"
@@ -184,14 +196,23 @@ export default component$(() => {
                 </div>
                 <div class="space-y-5 p-5">
                   <div class="flex flex-wrap gap-2">
-                    {event.categories.map((category) => (
-                      <span
-                        key={category}
-                        class="rounded-full border bg-black px-2.5 py-1 text-sm font-semibold text-white"
-                      >
-                        {category}
-                      </span>
-                    ))}
+                    {event.categories.map((category) => {
+                      const isInFilter =
+                        filterCategories.value.includes(category);
+
+                      return (
+                        <span
+                          key={category}
+                          class={[
+                            "rounded-full border bg-black  px-2.5 py-1 text-sm font-semibold text-white",
+                            hasFilters.value &&
+                              (isInFilter ? "opacity-100" : "opacity-50"),
+                          ]}
+                        >
+                          {category}
+                        </span>
+                      );
+                    })}
 
                     {event.tags.map((tag) => (
                       <span

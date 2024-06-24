@@ -21,11 +21,17 @@ type FilterProps = {
   filterCategories: Signal<string[]>;
 };
 
+const MAX_TAGS = 5;
+
+const MAX_CATEGORIES = 3;
+
 export default component$<FilterProps>(
   ({ categories, filterTags, filterCategories }) => {
     const swiperElRef = useSignal<HTMLDivElement>();
 
     const showFilterModal = useSignal(false);
+
+    const showRelevanceFilterModal = useSignal(false);
 
     const newTagInputRef = useSignal<HTMLInputElement>();
 
@@ -51,6 +57,8 @@ export default component$<FilterProps>(
 
       if (!tag) return;
 
+      if (localFilterTags.value.length === MAX_TAGS) return;
+
       localFilterTags.value = [
         ...new Set([...localFilterTags.value, tag.trim()]),
       ];
@@ -59,8 +67,17 @@ export default component$<FilterProps>(
     });
 
     const applyFilters = $(() => {
-      filterTags.value = localFilterTags.value;
-      filterCategories.value = localFilterCategories.value;
+      if (localFilterTags.value.length) {
+        filterTags.value = localFilterTags.value;
+      } else {
+        filterTags.value = [];
+      }
+
+      if (localFilterCategories.value.length) {
+        filterCategories.value = localFilterCategories.value;
+      } else {
+        filterCategories.value = [];
+      }
 
       handleClose();
     });
@@ -98,7 +115,36 @@ export default component$<FilterProps>(
     return (
       <>
         <div class="flex items-center justify-between  gap-5 rounded-2xl border px-3 py-3">
-          <div></div>
+          <div class="flex flex-wrap gap-2">
+            {filterCategories.value.map((category, index) => (
+              <button
+                key={category + index}
+                onClick$={() => {
+                  filterView.value = "tags";
+                  showFilterModal.value = true;
+                }}
+                type="button"
+                class="rounded-full border bg-black px-4 py-1 text-sm font-semibold text-white"
+              >
+                {category}
+              </button>
+            ))}
+
+            {filterTags.value.map((tag, index) => (
+              <button
+                key={tag + index}
+                onClick$={() => {
+                  filterView.value = "tags";
+                  showFilterModal.value = true;
+                }}
+                type="button"
+                class="rounded-full border border-[#858585] px-3 py-1 text-sm font-bold"
+              >
+                <strong>#</strong>
+                {tag}
+              </button>
+            ))}
+          </div>
           <div class="flex items-center gap-5">
             <button
               type="button"
@@ -111,7 +157,12 @@ export default component$<FilterProps>(
             >
               Filtros
             </button>
-            <button type="button" onClick$={() => {}}>
+            <button
+              type="button"
+              onClick$={() => {
+                showRelevanceFilterModal.value = true;
+              }}
+            >
               <svg
                 class="h-8 w-auto stroke-[1.2px]"
                 xmlns="http://www.w3.org/2000/svg"
@@ -131,9 +182,9 @@ export default component$<FilterProps>(
           onClose$={() => {
             showFilterModal.value = false;
           }}
-          class="h-full w-full [scrollbar-width:none] backdrop:bg-black/50 max-lg:!max-h-[100%] max-lg:!max-w-[100%] lg:h-4/5 lg:w-[35%] lg:rounded-2xl"
+          class="[scrollbar-width:none] backdrop:bg-black/50 lg:min-h-[70%] lg:w-[35%] lg:rounded-2xl"
         >
-          <div class="flex flex-col">
+          <div class="flex h-full flex-col">
             <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
               <p class="text-xl font-semibold">Filtros</p>
               <button type="button" onClick$={handleClose}>
@@ -258,6 +309,10 @@ export default component$<FilterProps>(
                             return (
                               <button
                                 type="button"
+                                disabled={
+                                  localFilterCategories.value.length ===
+                                  MAX_CATEGORIES
+                                }
                                 onClick$={() => {
                                   if (isInFilter) {
                                     localFilterCategories.value =
@@ -278,7 +333,6 @@ export default component$<FilterProps>(
                                 key={category}
                               >
                                 <span
-                                  key={category}
                                   class={[
                                     "rounded-full border bg-black px-4 py-1 text-sm font-semibold text-white",
                                     isInFilter ? "opacity-100" : "opacity-40",
@@ -326,6 +380,7 @@ export default component$<FilterProps>(
                                 addTag();
                               }
                             }}
+                            disabled={localFilterTags.value.length === MAX_TAGS}
                           />
 
                           <button
@@ -357,7 +412,7 @@ export default component$<FilterProps>(
                               key={tag}
                               class="flex items-center gap-1.5 rounded-full border border-[#858585] px-3 py-1"
                             >
-                              <span key={tag} class="text-sm font-medium">
+                              <span class="text-sm font-medium">
                                 <strong>#</strong>
                                 {tag}
                               </span>
@@ -473,6 +528,77 @@ export default component$<FilterProps>(
               <button
                 type="button"
                 onClick$={handleClose}
+                class="rounded-lg border border-[#ff7b0d] px-5 py-1 font-semibold text-[#ff7b0d]"
+              >
+                Fetchar
+              </button>
+              <button
+                type="button"
+                onClick$={applyFilters}
+                class="rounded-lg bg-[#ff7b0d] px-5 py-1 font-semibold text-white"
+              >
+                Ver Eventos
+              </button>
+            </div>
+          </div>
+        </Modal>
+        <Modal
+          open={showRelevanceFilterModal}
+          onClose$={() => {
+            showRelevanceFilterModal.value = false;
+          }}
+          class="[scrollbar-width:none] backdrop:bg-black/50 lg:w-[35%] lg:rounded-2xl"
+        >
+          <div class="flex h-full flex-col">
+            <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
+              <p class="text-xl font-semibold">Relevancia</p>
+              <button
+                type="button"
+                onClick$={() => {
+                  showRelevanceFilterModal.value = false;
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="size-6"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div class="flex-1 bg-[#fafafa] px-5 py-6">
+              <div class="flex items-center gap-2">
+                <svg
+                  class="h-8 w-auto shrink-0 stroke-[1.2px]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="4.5 3.5 18 17"
+                >
+                  <g fill="none" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      d="M5 8h7m-7 4h7m-7 4h7"
+                    ></path>
+                    <path d="m19 20l3-3m-3 3l-3-3m3 3V4m0 0l-3 3m3-3l3 3"></path>
+                  </g>
+                </svg>
+                <div>
+                  <p class="text-xl font-bold">Ordene por importancia</p>
+                  <p>Arraste para cima o que e mais importante para voce</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-center gap-16 bg-white px-5 py-3">
+              <button
+                type="button"
+                onClick$={() => {
+                  showRelevanceFilterModal.value = false;
+                }}
                 class="rounded-lg border border-[#ff7b0d] px-5 py-1 font-semibold text-[#ff7b0d]"
               >
                 Fetchar
