@@ -4,6 +4,7 @@ import {
   useTask$,
   type Signal,
 } from "@builder.io/qwik";
+import { startOfToday } from "date-fns";
 import { type TEvent } from "~/types";
 
 export function useFilter(events: Signal<TEvent[]>) {
@@ -12,6 +13,8 @@ export function useFilter(events: Signal<TEvent[]>) {
   const filterTags = useSignal<string[]>([]);
 
   const filterCategories = useSignal<string[]>([]);
+
+  const filterMaxDate = useSignal<Date>(startOfToday());
 
   const categories = useComputed$(() => [
     ...new Set(events.value.flatMap((event) => event.categories)),
@@ -22,21 +25,19 @@ export function useFilter(events: Signal<TEvent[]>) {
 
     const categories = track(() => filterCategories.value);
 
-    track(() => events.value);
+    const _events = track(() => events.value);
 
     const filterResults: TEvent[] = [];
 
     if (tags.length > 0) {
       filterResults.push(
-        ...events.value.filter((ev) =>
-          ev.tags.some((tag) => tags.includes(tag)),
-        ),
+        ..._events.filter((ev) => ev.tags.some((tag) => tags.includes(tag))),
       );
     }
 
     if (categories.length > 0) {
       filterResults.push(
-        ...events.value.filter((ev) =>
+        ..._events.filter((ev) =>
           ev.categories.some((cat) => categories.includes(cat)),
         ),
       );
@@ -45,7 +46,7 @@ export function useFilter(events: Signal<TEvent[]>) {
     if (tags.length || categories.length) {
       filteredEvents.value = filterResults;
     } else {
-      filteredEvents.value = events.value;
+      filteredEvents.value = _events;
     }
   });
 
@@ -54,5 +55,6 @@ export function useFilter(events: Signal<TEvent[]>) {
     filteredEvents,
     filterTags,
     filterCategories,
+    filterMaxDate,
   };
 }

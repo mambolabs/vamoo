@@ -57,8 +57,13 @@ export default component$(() => {
     events.value.length > 0 ? events.value[0] : null,
   );
 
-  const { categories, filteredEvents, filterCategories, filterTags } =
-    useFilter(events);
+  const {
+    categories,
+    filteredEvents,
+    filterCategories,
+    filterTags,
+    filterMaxDate,
+  } = useFilter(events);
 
   const hasFilters = useComputed$(
     () => filterCategories.value.length > 0 || filterTags.value.length > 0,
@@ -146,6 +151,7 @@ export default component$(() => {
           categories={categories}
           filterTags={filterTags}
           filterCategories={filterCategories}
+          filterMaxDate={filterMaxDate}
         />
 
         <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
