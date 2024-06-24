@@ -1,5 +1,4 @@
 import {
-  $,
   useComputed$,
   useSignal,
   useTask$,
@@ -19,20 +18,34 @@ export function useFilter(events: Signal<TEvent[]>) {
   ]);
 
   useTask$(({ track }) => {
-    track(() => filterTags.value);
-    track(() => filterCategories.value);
+    const tags = track(() => filterTags.value);
+
+    const categories = track(() => filterCategories.value);
+
     track(() => events.value);
 
-    if (filterTags.value.length > 0) {
-      filteredEvents.value = events.value.filter((ev) =>
-        ev.tags.some((tag) => filterTags.value.includes(tag)),
+    const filterResults: TEvent[] = [];
+
+    if (tags.length > 0) {
+      filterResults.push(
+        ...events.value.filter((ev) =>
+          ev.tags.some((tag) => tags.includes(tag)),
+        ),
       );
     }
 
-    if (filterCategories.value.length > 0) {
-      filteredEvents.value = events.value.filter((ev) =>
-        ev.categories.some((cat) => filterCategories.value.includes(cat)),
+    if (categories.length > 0) {
+      filterResults.push(
+        ...events.value.filter((ev) =>
+          ev.categories.some((cat) => categories.includes(cat)),
+        ),
       );
+    }
+
+    if (tags.length || categories.length) {
+      filteredEvents.value = filterResults;
+    } else {
+      filteredEvents.value = events.value;
     }
   });
 
@@ -41,11 +54,5 @@ export function useFilter(events: Signal<TEvent[]>) {
     filteredEvents,
     filterTags,
     filterCategories,
-    addFilterTag: $((tag: string) => {
-      filterTags.value = [...filterTags.value, tag];
-    }),
-    addFilterCategory: $((category: string) => {
-      filterCategories.value = [...filterCategories.value, category];
-    }),
   };
 }
