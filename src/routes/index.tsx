@@ -85,12 +85,14 @@ export default component$(() => {
   useTask$(
     ({ track, cleanup }) => {
       if (isServer) return;
-      track(() => eventsRef.value);
+      const el = track(() => eventsRef.value);
+
+      const _hasFilters = track(() => hasFilters.value);
 
       const observeLastChild = () => {
-        if (!eventsRef.value) return;
+        if (!el || _hasFilters) return;
 
-        const lastChild = eventsRef.value.lastElementChild;
+        const lastChild = el.lastElementChild;
 
         if (lastChild) {
           observer.observe(lastChild);
@@ -278,7 +280,7 @@ export default component$(() => {
             </div>
           )}
         </div>
-        {/* modal */}
+
         {previewEvent.value && (
           <EventModal
             open={showModal}
