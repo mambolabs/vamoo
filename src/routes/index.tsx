@@ -16,13 +16,11 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { isServer } from "@builder.io/qwik/build";
+import { EVENTS_ENDPOINT } from "~/constants";
+import { fetchEvents } from "~/utils";
 
 export const useEvents = routeLoader$(async () => {
-  const response = await fetch("https://api.vamoo.la/v1/events");
-
-  const data = await response.json();
-
-  return data.details.results as TEvent[];
+  return fetchEvents(new URL(EVENTS_ENDPOINT));
 });
 
 function viaDate(dateString: string) {
@@ -70,7 +68,7 @@ export default component$(() => {
   );
 
   const loadEvents = $(async () => {
-    const url = new URL("https://api.vamoo.la/v1/events");
+    const url = new URL(EVENTS_ENDPOINT);
 
     if (events.value.length) {
       const lastEvent = events.value[events.value.length - 1];
@@ -80,11 +78,7 @@ export default component$(() => {
       }
     }
 
-    const response = await fetch(url);
-
-    const data = await response.json();
-
-    return data.details.results as TEvent[];
+    return fetchEvents(url);
   });
 
   useTask$(
