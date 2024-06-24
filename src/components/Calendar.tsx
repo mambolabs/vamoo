@@ -1,4 +1,4 @@
-import type { QRL } from "@builder.io/qwik";
+import type { QRL, Signal } from "@builder.io/qwik";
 import {
   $,
   component$,
@@ -54,12 +54,13 @@ const calendarStyles = ({
 
 type CalendarProps = {
   handleChange?: QRL<(value: Date) => void>;
+  initialDay?: Signal<Date>;
 };
 
-export default component$<CalendarProps>(({ handleChange }) => {
+export default component$<CalendarProps>(({ handleChange, initialDay }) => {
   const today = startOfToday();
 
-  const selectedDay = useSignal(today);
+  const selectedDay = useSignal(initialDay?.value ?? today);
 
   const currentMonth = useSignal(format(today, "MMM-yyyy"));
 
@@ -91,8 +92,9 @@ export default component$<CalendarProps>(({ handleChange }) => {
   });
 
   useTask$(({ track }) => {
-    track(() => selectedDay.value);
-    handleChange?.(selectedDay.value);
+    const day = track(() => selectedDay.value);
+
+    handleChange?.(day);
   });
 
   return (
