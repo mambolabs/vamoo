@@ -8,7 +8,7 @@ import { Navigation, Pagination } from "swiper/modules";
 import { Modal, type ModalProps } from "./common/Modal";
 
 export default component$<ModalProps & { event: TEvent }>(
-  ({ event, open, onClose$, onOpen$ }) => {
+  ({ event, open, ...props }) => {
     const formatEventDates = $((date: Date) => {
       if (isNaN(date.getTime())) {
         return "";
@@ -37,31 +37,28 @@ export default component$<ModalProps & { event: TEvent }>(
 
     return (
       <Modal
+        {...props}
         open={open}
-        onOpen$={onOpen$}
-        onClose$={onClose$}
         class="h-full w-full [scrollbar-width:none] backdrop:bg-black/50 max-lg:!max-h-[100%] max-lg:!max-w-[100%]  lg:h-4/5 lg:w-[45%] lg:rounded-2xl"
       >
         <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
-          <div>
-            <button
-              type="button"
-              onClick$={() => {
-                open.value = false;
-              }}
+          <button
+            type="button"
+            onClick$={() => {
+              open.value = false;
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="size-6"
+              viewBox="0 0 32 32"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="size-6"
-                viewBox="0 0 32 32"
-              >
-                <path
-                  fill="currentColor"
-                  d="M29 16c0 .69-.56 1.25-1.25 1.25H7.213l7.432 7.628a1.25 1.25 0 1 1-1.79 1.744l-9.497-9.747a1.246 1.246 0 0 1 0-1.75l9.497-9.747a1.25 1.25 0 0 1 1.79 1.744L7.213 14.75H27.75c.69 0 1.25.56 1.25 1.25"
-                />
-              </svg>
-            </button>
-          </div>
+              <path
+                fill="currentColor"
+                d="M29 16c0 .69-.56 1.25-1.25 1.25H7.213l7.432 7.628a1.25 1.25 0 1 1-1.79 1.744l-9.497-9.747a1.246 1.246 0 0 1 0-1.75l9.497-9.747a1.25 1.25 0 0 1 1.79 1.744L7.213 14.75H27.75c.69 0 1.25.56 1.25 1.25"
+              />
+            </svg>
+          </button>
 
           <button
             type="button"
