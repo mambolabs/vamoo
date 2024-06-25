@@ -5,7 +5,7 @@ import { isServer } from "@builder.io/qwik/build";
 
 import Swiper from "swiper";
 import { Navigation, Pagination } from "swiper/modules";
-import { Modal, type ModalProps } from "./common/Modal";
+import { Modal, type ModalProps } from "../common/Modal";
 
 export default component$<ModalProps & { event: TEvent }>(
   ({ event, open, ...props }) => {

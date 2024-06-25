@@ -6,7 +6,7 @@ import {
   useTask$,
 } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
-import EventModal from "~/components/EventModal";
+import EventModal from "~/components/modals/EventModal";
 import Filter from "~/components/Filter";
 import { useFilter } from "~/hooks/useFilter";
 import Avatar from "~/media/user.png?jsx";
