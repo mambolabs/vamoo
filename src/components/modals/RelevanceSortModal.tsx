@@ -72,7 +72,7 @@ export default component$<Props>(
         onClose$={() => {
           showModal.value = false;
         }}
-        class="[scrollbar-width:none] backdrop:bg-black/50 lg:w-[30%] lg:rounded-2xl"
+        class="w-full [scrollbar-width:none]  backdrop:bg-black/50 max-lg:h-full max-lg:!max-h-[100%] max-lg:!max-w-[100%]   lg:w-3/4 lg:rounded-2xl xl:w-[30%]"
       >
         <div class="flex h-full flex-col">
           <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
@@ -97,7 +97,7 @@ export default component$<Props>(
           </div>
 
           <div class="flex-1 space-y-10 bg-[#fafafa] px-5 py-6">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3  md:gap-2">
               <svg
                 class="h-8 w-auto shrink-0 stroke-[1.2px]"
                 xmlns="http://www.w3.org/2000/svg"
@@ -110,11 +110,13 @@ export default component$<Props>(
               </svg>
               <div>
                 <p class="text-xl font-bold">Ordene por importancia</p>
-                <p>Arraste para cima o que e mais importante para voce</p>
+                <p class="text-sm md:text-base">
+                  Arraste para cima o que e mais importante para voce
+                </p>
               </div>
             </div>
 
-            <div class="space-y-3 px-5">
+            <div class="space-y-3 md:px-5">
               {filterOptions.value.map((opt, index) => (
                 <FilterListItem option={opt} index={index + 1} key={index} />
               ))}
@@ -122,7 +124,7 @@ export default component$<Props>(
                 <div class="flex w-8 items-center  justify-center self-stretch rounded bg-[#a7a7a7] text-xl font-semibold text-white">
                   {filterOptions.value.length + 1}
                 </div>
-                <div class="flex flex-1 items-center gap-2 rounded border border-dashed border-[#a7a7a7] px-2 py-3 font-semibold text-[#ff7b0d]">
+                <div class="flex flex-1 items-center gap-2 rounded border border-dashed border-[#a7a7a7] p-1.5 font-semibold   text-[#ff7b0d] md:px-2 md:py-3">
                   <svg
                     class="h-6 w-auto shrink-0"
                     xmlns="http://www.w3.org/2000/svg"
@@ -145,9 +147,21 @@ export default component$<Props>(
                       showModal.value = false;
                       altFilter();
                     }}
-                    class="ml-auto rounded-lg bg-[#ff7b0d] px-5 py-1 font-semibold text-white shadow"
+                    class="ml-auto rounded-lg bg-[#ff7b0d] p-2 font-semibold text-white shadow md:px-5 md:py-1"
                   >
-                    Configurar
+                    <svg
+                      class="size-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        fill="currentColor"
+                        fill-rule="evenodd"
+                        d="M14.279 2.152C13.909 2 13.439 2 12.5 2s-1.408 0-1.779.152a2.008 2.008 0 0 0-1.09 1.083c-.094.223-.13.484-.145.863a1.615 1.615 0 0 1-.796 1.353a1.64 1.64 0 0 1-1.579.008c-.338-.178-.583-.276-.825-.308a2.026 2.026 0 0 0-1.49.396c-.318.242-.553.646-1.022 1.453c-.47.807-.704 1.21-.757 1.605c-.07.526.074 1.058.4 1.479c.148.192.357.353.68.555c.477.297.783.803.783 1.361c0 .558-.306 1.064-.782 1.36c-.324.203-.533.364-.682.556a1.99 1.99 0 0 0-.399 1.479c.053.394.287.798.757 1.605c.47.807.704 1.21 1.022 1.453c.424.323.96.465 1.49.396c.242-.032.487-.13.825-.308a1.64 1.64 0 0 1 1.58.008c.486.28.774.795.795 1.353c.015.38.051.64.145.863c.204.49.596.88 1.09 1.083c.37.152.84.152 1.779.152s1.409 0 1.779-.152a2.008 2.008 0 0 0 1.09-1.083c.094-.223.13-.483.145-.863c.02-.558.309-1.074.796-1.353a1.64 1.64 0 0 1 1.579-.008c.338.178.583.276.825.308c.53.07 1.066-.073 1.49-.396c.318-.242.553-.646 1.022-1.453c.47-.807.704-1.21.757-1.605a1.99 1.99 0 0 0-.4-1.479c-.148-.192-.357-.353-.68-.555c-.477-.297-.783-.803-.783-1.361c0-.558.306-1.064.782-1.36c.324-.203.533-.364.682-.556a1.99 1.99 0 0 0 .399-1.479c-.053-.394-.287-.798-.757-1.605c-.47-.807-.704-1.21-1.022-1.453a2.026 2.026 0 0 0-1.49-.396c-.242.032-.487.13-.825.308a1.64 1.64 0 0 1-1.58-.008a1.615 1.615 0 0 1-.795-1.353c-.015-.38-.051-.64-.145-.863a2.007 2.007 0 0 0-1.09-1.083M12.5 15c1.67 0 3.023-1.343 3.023-3S14.169 9 12.5 9c-1.67 0-3.023 1.343-3.023 3s1.354 3 3.023 3"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    <span class="hidden md:block">Configurar</span>
                   </button>
                 </div>
               </div>
@@ -258,7 +272,7 @@ const FilterListItem = component$<FilterListItemProps>(
         <div class="flex w-8 items-center  justify-center self-stretch rounded bg-[#ff7400] text-xl font-semibold text-white">
           {index}
         </div>
-        <div class="flex flex-1 items-center gap-2 rounded border border-[#ff7b0d] px-2 py-3 font-semibold text-[#ff7b0d] shadow-md">
+        <div class="flex flex-1 items-center gap-2 rounded border border-[#ff7b0d]   px-2 py-3 font-semibold text-[#ff7b0d] shadow-md">
           <button type="button" class="">
             <svg
               class="h-6 w-auto"

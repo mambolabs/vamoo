@@ -279,7 +279,7 @@ export default component$<FilterProps>(
           onClose$={() => {
             showFilterModal.value = false;
           }}
-          class="[scrollbar-width:none] backdrop:bg-black/50 lg:min-h-[70%] lg:w-[35%] lg:rounded-2xl"
+          class="w-full [scrollbar-width:none] backdrop:bg-black/50  max-lg:h-full max-lg:!max-h-[100%] max-lg:!max-w-[100%] lg:w-3/4 lg:rounded-2xl xl:min-h-[70%] xl:w-[35%]"
         >
           <div class="flex h-full flex-col">
             <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
@@ -316,7 +316,7 @@ export default component$<FilterProps>(
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-7 w-auto"
+                    class="h-6 w-auto md:h-7"
                     viewBox="0 0 448 512"
                   >
                     <path
@@ -342,7 +342,7 @@ export default component$<FilterProps>(
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-7 w-auto"
+                    class="h-6 w-auto md:h-7"
                     viewBox="0 0 32 32"
                   >
                     <g
@@ -373,7 +373,7 @@ export default component$<FilterProps>(
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-7 w-auto"
+                    class="h-6 w-auto md:h-7"
                     viewBox="0 0 20 20"
                   >
                     <path
@@ -603,7 +603,7 @@ export default component$<FilterProps>(
                   </div>
                   <div class="swiper-slide">
                     <div class="h-full  px-5 py-6">
-                      <div class="mx-auto h-full w-4/5 space-y-6">
+                      <div class="mx-auto h-full space-y-6 lg:w-4/5">
                         <div>
                           <p class="mb-2 text-center text-xl font-bold">
                             Quando?
@@ -665,7 +665,7 @@ const Button = component$<ButtonProps>(({ isActive, ...props }) => {
     <button
       {...props}
       class={[
-        "flex size-12 items-center justify-center rounded-full ",
+        "flex size-11 items-center justify-center rounded-full md:size-12 ",
         isActive
           ? "bg-black text-white"
           : "border border-[#ebe0dc] bg-white text-[#ff7b0d]",

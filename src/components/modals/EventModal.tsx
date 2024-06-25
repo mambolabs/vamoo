@@ -39,7 +39,7 @@ export default component$<ModalProps & { event: TEvent }>(
       <Modal
         {...props}
         open={open}
-        class="h-full w-full [scrollbar-width:none] backdrop:bg-black/50 max-lg:!max-h-[100%] max-lg:!max-w-[100%]  lg:h-4/5 lg:w-[45%] lg:rounded-2xl"
+        class="w-full [scrollbar-width:none] backdrop:bg-black/50 max-lg:h-full max-lg:!max-h-[100%] max-lg:!max-w-[100%]  lg:w-3/4 lg:rounded-2xl xl:h-4/5 xl:w-[45%]"
       >
         <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
           <button
