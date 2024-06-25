@@ -18,6 +18,7 @@ import { isServer } from "@builder.io/qwik/build";
 import { format, formatRelative, startOfToday } from "date-fns";
 import { pt } from "date-fns/locale";
 import RelevanceSortModal from "./modals/RelevanceSortModal";
+import type { RelevanceFilterItem } from "~/types";
 
 type FilterProps = {
   categories: Signal<string[]>;
@@ -25,8 +26,6 @@ type FilterProps = {
   filterCategories: Signal<string[]>;
   filterMaxDate: Signal<Date>;
 };
-
-type RelevanceFilterItem = { title: string; key: string };
 
 const MAX_TAGS = 5;
 
@@ -145,6 +144,12 @@ export default component$<FilterProps>(
       });
 
       return `${rel}, ${dateStr}`;
+    });
+
+    const filterByRelevance = $(() => {
+      showRelevanceFilterModal.value = false;
+
+      console.log("filterByRelevance", relevanceFilterOptions.value);
     });
 
     useTask$(
@@ -643,6 +648,7 @@ export default component$<FilterProps>(
           altFilter={$(() => {
             showFilterModal.value = true;
           })}
+          applyFilters={filterByRelevance}
         />
       </>
     );
