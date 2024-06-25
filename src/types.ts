@@ -43,4 +43,4 @@ export type TEvent = {
   score: number;
 };
 
-export type RelevanceFilterItem = { title: string; key: string };
+export type RelevanceFilterItem = { title: string; key: "recent" | "nearest" };

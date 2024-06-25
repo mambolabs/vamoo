@@ -112,6 +112,7 @@ export default component$<FilterProps>(
 
     const locationFilter = $(() => {
       console.log("locationFilter");
+      /** TODO: */
     });
 
     const timeFilter = $(() => {
@@ -150,6 +151,8 @@ export default component$<FilterProps>(
       showRelevanceFilterModal.value = false;
 
       console.log("filterByRelevance", relevanceFilterOptions.value);
+
+      /** TODO: */
     });
 
     useTask$(
