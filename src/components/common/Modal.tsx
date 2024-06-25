@@ -17,8 +17,6 @@ export const Modal = component$(
       if (isServer) return;
 
       const handler = (event: KeyboardEvent) => {
-        console.log("handler:");
-
         if (event.key === "Escape") {
           event.preventDefault();
           ref.value?.close();
@@ -30,16 +28,18 @@ export const Modal = component$(
       return () => ref.value?.removeEventListener("keydown", handler);
     });
 
-    useTask$(function ({ track }) {
+    useTask$(({ track }) => {
       const isOpen = track(() => opened.value);
 
-      if (!ref.value) return;
+      const modal = track(() => ref.value);
+
+      if (!modal) return;
 
       if (isOpen) {
-        ref.value.showModal();
+        modal.showModal();
         if (onOpen$) onOpen$();
       } else {
-        ref.value.close();
+        modal.close();
       }
     });
 

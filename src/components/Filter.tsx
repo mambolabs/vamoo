@@ -19,11 +19,6 @@ import { format, formatRelative, startOfToday } from "date-fns";
 import { pt } from "date-fns/locale";
 import RelevanceSortModal from "./modals/RelevanceSortModal";
 
-// import {
-//   draggable,
-//   dropTargetForElements,
-// } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-// import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 type FilterProps = {
   categories: Signal<string[]>;
   filterTags: Signal<string[]>;
@@ -157,8 +152,6 @@ export default component$<FilterProps>(
         if (isServer) {
           return;
         }
-
-        showRelevanceFilterModal.value = true;
 
         const view = track(() => filterView.value);
 

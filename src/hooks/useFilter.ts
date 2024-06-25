@@ -54,6 +54,7 @@ export function useFilter(events: Signal<TEvent[]>) {
   });
 
   return {
+    loc,
     categories,
     filteredEvents,
     filterTags,
