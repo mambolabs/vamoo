@@ -189,8 +189,8 @@ export default component$<FilterProps>(
 
     return (
       <>
-        <div class="flex items-center justify-between  gap-5 rounded-2xl border px-3 py-3">
-          <div class="flex flex-wrap gap-2">
+        <div class="flex  flex-col-reverse justify-center gap-1 rounded-2xl lg:flex-row lg:items-center lg:justify-between lg:gap-5 lg:border lg:px-3 lg:py-3">
+          <div class="flex flex-wrap gap-2 max-lg:p-2.5">
             <button
               onClick$={() => {
                 filterView.value = "time";
@@ -242,35 +242,55 @@ export default component$<FilterProps>(
               </button>
             ))}
           </div>
-          <div class="flex items-center gap-5">
-            <button
-              type="button"
-              class="rounded-full bg-black px-5 py-1.5 text-white "
-              onClick$={() => {
-                filterView.value = "tags";
+          <div class="flex items-center justify-between bg-black max-lg:p-2.5 lg:bg-white">
+            <div class="flex items-center lg:hidden">
+              <button type="button" class="text-white">
+                <svg
+                  class="h-auto w-8"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M3 18v-2h18v2zm0-5v-2h18v2zm0-5V6h18v2z"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div class="flex items-center gap-5">
+              <button
+                type="button"
+                class="rounded-full border bg-black px-4 py-1 text-white lg:border-0 lg:px-5 lg:py-1.5 "
+                onClick$={() => {
+                  filterView.value = "tags";
 
-                showFilterModal.value = true;
-              }}
-            >
-              Filtros
-            </button>
-            <button
-              type="button"
-              onClick$={() => {
-                showRelevanceFilterModal.value = true;
-              }}
-            >
-              <svg
-                class="h-8 w-auto stroke-[1.2px]"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="4.5 3.5 18 17"
+                  showFilterModal.value = true;
+                }}
               >
-                <g fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" d="M5 8h7m-7 4h7m-7 4h7"></path>
-                  <path d="m19 20l3-3m-3 3l-3-3m3 3V4m0 0l-3 3m3-3l3 3"></path>
-                </g>
-              </svg>
-            </button>
+                Filtros
+              </button>
+              <button
+                type="button"
+                class="text-white lg:text-black"
+                onClick$={() => {
+                  showRelevanceFilterModal.value = true;
+                }}
+              >
+                <svg
+                  class="h-8 w-auto stroke-[1.2px]"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="4.5 3.5 18 17"
+                >
+                  <g fill="none" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      d="M5 8h7m-7 4h7m-7 4h7"
+                    ></path>
+                    <path d="m19 20l3-3m-3 3l-3-3m3 3V4m0 0l-3 3m3-3l3 3"></path>
+                  </g>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 

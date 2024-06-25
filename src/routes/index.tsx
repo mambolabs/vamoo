@@ -133,14 +133,14 @@ export default component$(() => {
   );
 
   return (
-    <div class="mx-auto grid grid-cols-1 gap-10 overflow-hidden md:h-screen md:grid-cols-[16%,1fr,16%] lg:px-5 xl:max-w-[1340px] 2xl:px-0">
-      <aside class="">
+    <div class="mx-auto grid grid-cols-1 gap-10 overflow-hidden md:h-screen lg:grid-cols-[16%,1fr,16%] lg:px-5 xl:max-w-[1340px] 2xl:px-0">
+      <aside class="hidden lg:block">
         <p class="text-2xl font-bold">Categorias</p>
         {categories.value.map((category, index) => (
           <p key={index}>{category}</p>
         ))}
       </aside>
-      <main class="pt-2 md:h-full md:overflow-hidden">
+      <main class="md:h-full md:overflow-hidden lg:pt-2">
         <Filter
           categories={categories}
           filterTags={filterTags}
