@@ -17,6 +17,13 @@ import { Modal } from "./common/Modal";
 import { isServer } from "@builder.io/qwik/build";
 import { format, formatRelative, startOfToday } from "date-fns";
 import { pt } from "date-fns/locale";
+import RelevanceSortModal from "./modals/RelevanceSortModal";
+
+// import {
+//   draggable,
+//   dropTargetForElements,
+// } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+// import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 type FilterProps = {
   categories: Signal<string[]>;
   filterTags: Signal<string[]>;
@@ -24,11 +31,27 @@ type FilterProps = {
   filterMaxDate: Signal<Date>;
 };
 
+type RelevanceFilterItem = { title: string; key: string };
+
 const MAX_TAGS = 5;
 
 const MAX_CATEGORIES = 3;
 
 const today = startOfToday();
+
+export function uniqueKeys(items: RelevanceFilterItem[]) {
+  const seenKeys = new Set<string>();
+
+  return items.filter((item) => {
+    if (seenKeys.has(item.key)) {
+      return false;
+    } else {
+      seenKeys.add(item.key);
+
+      return true;
+    }
+  });
+}
 
 export default component$<FilterProps>(
   ({ categories, filterTags, filterCategories, filterMaxDate }) => {
@@ -49,6 +72,13 @@ export default component$<FilterProps>(
     const localFilterCategories = useSignal(filterCategories.value);
 
     const localFilterDistance = useSignal(1);
+
+    const relevanceFilterOptions = useSignal<RelevanceFilterItem[]>(() =>
+      uniqueKeys([
+        { title: "Eventos mais recentes", key: "recent" },
+        { title: "Eventos mais proximos", key: "nearest" },
+      ]),
+    );
 
     const handleClose = $(() => {
       localFilterCategories.value = filterCategories.value;
@@ -127,6 +157,8 @@ export default component$<FilterProps>(
         if (isServer) {
           return;
         }
+
+        showRelevanceFilterModal.value = true;
 
         const view = track(() => filterView.value);
 
@@ -612,77 +644,13 @@ export default component$<FilterProps>(
           </div>
         </Modal>
 
-        <Modal
-          open={showRelevanceFilterModal}
-          onClose$={() => {
-            showRelevanceFilterModal.value = false;
-          }}
-          class="[scrollbar-width:none] backdrop:bg-black/50 lg:w-[35%] lg:rounded-2xl"
-        >
-          <div class="flex h-full flex-col">
-            <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
-              <p class="text-xl font-semibold">Relevancia</p>
-              <button
-                type="button"
-                onClick$={() => {
-                  showRelevanceFilterModal.value = false;
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="size-6"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div class="flex-1 bg-[#fafafa] px-5 py-6">
-              <div class="flex items-center gap-2">
-                <svg
-                  class="h-8 w-auto shrink-0 stroke-[1.2px]"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="4.5 3.5 18 17"
-                >
-                  <g fill="none" stroke="currentColor">
-                    <path
-                      stroke-linecap="round"
-                      d="M5 8h7m-7 4h7m-7 4h7"
-                    ></path>
-                    <path d="m19 20l3-3m-3 3l-3-3m3 3V4m0 0l-3 3m3-3l3 3"></path>
-                  </g>
-                </svg>
-                <div>
-                  <p class="text-xl font-bold">Ordene por importancia</p>
-                  <p>Arraste para cima o que e mais importante para voce</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-center gap-16 bg-white px-5 py-3">
-              <button
-                type="button"
-                onClick$={() => {
-                  showRelevanceFilterModal.value = false;
-                }}
-                class="rounded-lg border border-[#ff7b0d] px-5 py-1 font-semibold text-[#ff7b0d]"
-              >
-                Fetchar
-              </button>
-              <button
-                type="button"
-                onClick$={applyFilters}
-                class="rounded-lg bg-[#ff7b0d] px-5 py-1 font-semibold text-white"
-              >
-                Ver Eventos
-              </button>
-            </div>
-          </div>
-        </Modal>
+        <RelevanceSortModal
+          showModal={showRelevanceFilterModal}
+          filterOptions={relevanceFilterOptions}
+          altFilter={$(() => {
+            showFilterModal.value = true;
+          })}
+        />
       </>
     );
   },
