@@ -15,13 +15,18 @@ import RangeInput from "./range-input/RangeInput";
 import Calendar from "./Calendar";
 import { Modal } from "./common/Modal";
 import { isServer } from "@builder.io/qwik/build";
-import { format, formatRelative, startOfToday } from "date-fns";
+import {
+  differenceInDays,
+  format,
+  formatRelative,
+  startOfToday,
+} from "date-fns";
 import { pt } from "date-fns/locale";
 import RelevanceSortModal from "./modals/RelevanceSortModal";
 import type { RelevanceFilterItem } from "~/types";
 
 type FilterProps = {
-  categories: Signal<string[]>;
+  categories: string[];
   filterTags: Signal<string[]>;
   filterCategories: Signal<string[]>;
   filterMaxDate: Signal<Date>;
@@ -136,9 +141,13 @@ export default component$<FilterProps>(
     });
 
     const displayDate = useComputed$(() => {
-      const [rel] = formatRelative(filterMaxDate.value, today, {
+      let [rel] = formatRelative(filterMaxDate.value, today, {
         locale: pt,
       }).split(" ");
+
+      if (differenceInDays(filterMaxDate.value, today) > 6) {
+        rel = format(filterMaxDate.value, "eeee", { locale: pt });
+      }
 
       const dateStr = format(filterMaxDate.value, "dd MMM", {
         locale: pt,
@@ -157,11 +166,9 @@ export default component$<FilterProps>(
 
     useTask$(
       ({ cleanup, track }) => {
-        if (isServer) {
-          return;
-        }
-
         const view = track(() => filterView.value);
+
+        if (isServer) return;
 
         const swiperInstance = new Swiper("#filter-slider", {
           modules: [Navigation],
@@ -419,7 +426,7 @@ export default component$<FilterProps>(
                         </p>
 
                         <div class="flex flex-wrap gap-2">
-                          {categories.value.map((category) => {
+                          {categories.map((category) => {
                             const isInFilter =
                               localFilterCategories.value.includes(category);
 
