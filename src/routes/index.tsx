@@ -3,7 +3,7 @@ import {
   component$,
   useComputed$,
   useSignal,
-  useTask$,
+  useVisibleTask$,
 } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
 import EventModal from "~/components/modals/EventModal";
@@ -50,7 +50,7 @@ function viaDate(dateString: string) {
 }
 
 export default component$(() => {
-  const eventsRef = useSignal<HTMLDivElement>();
+  const triggerRef = useSignal<HTMLDivElement>();
 
   const showModal = useSignal(false);
 
@@ -64,13 +64,8 @@ export default component$(() => {
     events.value.length > 0 ? events.value[0] : null,
   );
 
-  const {
-    categories,
-    filteredEvents,
-    filterCategories,
-    filterTags,
-    filterMaxDate,
-  } = useFilter(events);
+  const { filteredEvents, filterCategories, filterTags, filterMaxDate } =
+    useFilter(events);
 
   const hasFilters = useComputed$(
     () => filterCategories.value.length > 0 || filterTags.value.length > 0,
@@ -92,56 +87,39 @@ export default component$(() => {
     return fetchEvents(url);
   });
 
-  useTask$(
-    ({ track, cleanup }) => {
-      if (isServer) return;
-      const el = track(() => eventsRef.value);
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    const el = track(() => triggerRef.value);
 
-      const _hasFilters = track(() => hasFilters.value);
+    if (!el) return;
 
-      const observeLastChild = () => {
-        if (!el || _hasFilters) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(async (entry) => {
+        if (entry.isIntersecting) {
+          try {
+            isLoading.value = true;
+            const newEvents = await loadEvents();
 
-        const lastChild = el.lastElementChild;
-
-        if (lastChild) {
-          observer.observe(lastChild);
-        }
-      };
-
-      const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach(async (entry) => {
-          if (entry.isIntersecting) {
-            try {
-              isLoading.value = true;
-              const newEvents = await loadEvents();
-
-              if (!newEvents.length) {
-                isLoading.value = false;
-
-                return;
-              }
-
-              events.value = [...events.value, ...newEvents];
-
-              observer.unobserve(entry.target);
-              observeLastChild();
-            } catch (err) {
-              console.log(err);
-            } finally {
+            if (!newEvents.length) {
               isLoading.value = false;
-            }
-          }
-        });
-      });
 
-      observeLastChild();
-      cleanup(() => {
-        observer.disconnect();
+              return;
+            }
+
+            events.value = [...events.value, ...newEvents];
+          } catch (err) {
+            console.log(err);
+          } finally {
+            isLoading.value = false;
+          }
+        }
       });
-    },
-    { eagerness: "visible" },
-  );
+    });
+
+    observer.observe(el);
+
+    cleanup(() => observer.disconnect());
+  });
 
   return (
     <div class="mx-auto grid grid-cols-1 gap-10 overflow-hidden md:h-screen lg:grid-cols-[16%,1fr,16%] lg:px-5 xl:max-w-[1340px] 2xl:px-0">
@@ -169,7 +147,7 @@ export default component$(() => {
             Eventos encontrados
           </p>
 
-          <div ref={eventsRef} class="space-y-10 ">
+          <div class="space-y-10 ">
             {filteredEvents.value.map((event, index) => (
               <div
                 key={`${event.id}-${index}`}
@@ -193,8 +171,8 @@ export default component$(() => {
                 </div>
                 <div class="relative rounded-2xl bg-black">
                   <div class="absolute left-5 top-5 flex items-center gap-3">
-                    <span class="rounded-full bg-[#0c9d0c] px-2.5 py-1 text-sm font-semibold text-white">
-                      Qua, {viaDate(event.startsOn)}
+                    <span class="rounded-full bg-[#0c9d0c] px-2.5 py-1 text-sm font-semibold capitalize text-white">
+                      {viaDate(event.startsOn)}
                     </span>
                     <span class="rounded-full bg-[#ff7400] px-2.5 py-1 text-sm font-semibold text-white">
                       {event.placeName}
@@ -286,12 +264,15 @@ export default component$(() => {
                 </div>
               </div>
             ))}
-          </div>
-          {isLoading.value && (
-            <div class="flex items-center justify-center pb-20 pt-10">
-              <div class="h-16 w-16 animate-[spin_2s_linear_infinite] rounded-full border-4 border-dashed border-gray-300"></div>
+
+            <div ref={triggerRef}>
+              {isLoading.value && (
+                <div class="flex items-center justify-center pb-20 pt-10">
+                  <div class="h-16 w-16 animate-[spin_2s_linear_infinite] rounded-full border-4 border-dashed border-gray-300"></div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {previewEvent.value && (
