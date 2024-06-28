@@ -15,8 +15,7 @@ import type { TEvent } from "~/types";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { isServer } from "@builder.io/qwik/build";
-import { EVENTS_ENDPOINT } from "~/constants";
+import { EVENTS_ENDPOINT, categories } from "~/constants";
 import { fetchEvents } from "~/utils";
 
 export const useEvents = routeLoader$(async () => {
@@ -136,8 +135,10 @@ export default component$(() => {
     <div class="mx-auto grid grid-cols-1 gap-10 overflow-hidden md:h-screen lg:grid-cols-[16%,1fr,16%] lg:px-5 xl:max-w-[1340px] 2xl:px-0">
       <aside class="hidden lg:block">
         <p class="text-2xl font-bold">Categorias</p>
-        {categories.value.map((category, index) => (
-          <p key={index}>{category}</p>
+        {categories.map((category, index) => (
+          <p key={index} class="font-semibold capitalize text-[#2d2d2d]">
+            {category}
+          </p>
         ))}
       </aside>
       <main class="md:h-full md:overflow-hidden lg:pt-2">

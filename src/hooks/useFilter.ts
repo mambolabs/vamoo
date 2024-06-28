@@ -1,9 +1,4 @@
-import {
-  useComputed$,
-  useSignal,
-  useTask$,
-  type Signal,
-} from "@builder.io/qwik";
+import { useSignal, useTask$, type Signal } from "@builder.io/qwik";
 import { startOfToday } from "date-fns";
 import { type TEvent } from "~/types";
 import { useGeolocation } from "./useGeolocation";
@@ -19,10 +14,6 @@ export function useFilter(events: Signal<TEvent[]>) {
   const filterCategories = useSignal<string[]>([]);
 
   const filterMaxDate = useSignal<Date>(today);
-
-  const categories = useComputed$(() => [
-    ...new Set(events.value.flatMap((event) => event.categories)),
-  ]);
 
   const loc = useGeolocation();
 
@@ -72,7 +63,6 @@ export function useFilter(events: Signal<TEvent[]>) {
 
   return {
     loc,
-    categories,
     filteredEvents,
     filterTags,
     filterCategories,
