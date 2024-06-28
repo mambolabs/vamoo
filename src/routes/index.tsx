@@ -19,7 +19,11 @@ import { EVENTS_ENDPOINT, categories } from "~/constants";
 import { fetchEvents } from "~/utils";
 
 export const useEvents = routeLoader$(async () => {
-  return fetchEvents(new URL(EVENTS_ENDPOINT));
+  const url = new URL(EVENTS_ENDPOINT);
+
+  url.searchParams.set("toDate", new Date().toISOString());
+
+  return fetchEvents(url);
 });
 
 function viaDate(dateString: string) {
@@ -74,6 +78,8 @@ export default component$(() => {
 
   const loadEvents = $(async () => {
     const url = new URL(EVENTS_ENDPOINT);
+
+    url.searchParams.set("toDate", filterMaxDate.value.toISOString());
 
     if (events.value.length) {
       const lastEvent = events.value[events.value.length - 1];
