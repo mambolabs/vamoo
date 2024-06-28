@@ -29,14 +29,20 @@ function viaDate(dateString: string) {
     return "";
   }
 
-  return `${date.getDate()} - ${new Intl.DateTimeFormat(undefined, {
+  const weekday = new Intl.DateTimeFormat("pt-PT", { weekday: "short" })
+    .format(date)
+    .slice(0, 3);
+
+  const time = new Intl.DateTimeFormat("pt-PT", {
     hour: "numeric",
     minute: "numeric",
     hour12: false,
     timeZone: "UTC",
   })
     .format(date)
-    .toLowerCase()}`;
+    .toLowerCase();
+
+  return `${weekday}, ${date.getDate()} - ${time}`;
 }
 
 export default component$(() => {
