@@ -3,6 +3,7 @@ import {
   component$,
   useComputed$,
   useSignal,
+  useTask$,
   useVisibleTask$,
 } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
@@ -15,13 +16,18 @@ import type { TEvent } from "~/types";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+
 import { EVENTS_ENDPOINT, categories } from "~/constants";
 import { fetchEvents } from "~/utils";
+import { useEventsContext } from "~/context/events-context";
+import { useGeolocation } from "~/hooks/useGeolocation";
 
 export const useEvents = routeLoader$(async () => {
   const url = new URL(EVENTS_ENDPOINT);
 
   url.searchParams.set("toDate", new Date().toISOString());
+  url.searchParams.set("geoLocation", "0,0");
+  url.searchParams.set("distance", "1km");
 
   return fetchEvents(url);
 });
@@ -50,6 +56,12 @@ function viaDate(dateString: string) {
 }
 
 export default component$(() => {
+
+  const evCtx = useEventsContext();
+
+  useGeolocation();
+  useFilter();
+
   const triggerRef = useSignal<HTMLDivElement>();
 
   const showModal = useSignal(false);
@@ -64,17 +76,21 @@ export default component$(() => {
     events.value.length > 0 ? events.value[0] : null,
   );
 
-  const { filteredEvents, filterCategories, filterTags, filterMaxDate } =
-    useFilter(events);
-
   const hasFilters = useComputed$(
-    () => filterCategories.value.length > 0 || filterTags.value.length > 0,
+    () => evCtx.filterCategories.length > 0 || evCtx.filterTags.length > 0,
   );
 
   const loadEvents = $(async () => {
     const url = new URL(EVENTS_ENDPOINT);
 
-    url.searchParams.set("toDate", filterMaxDate.value.toISOString());
+    url.searchParams.set("toDate", evCtx.filterMaxDate.toISOString());
+
+    url.searchParams.set(
+      "geoLocation",
+      evCtx.coord.longitude.toString() + "," + evCtx.coord.latitude.toString(),
+    );
+
+    url.searchParams.set("distance", "1km");
 
     if (events.value.length) {
       const lastEvent = events.value[events.value.length - 1];
@@ -85,6 +101,10 @@ export default component$(() => {
     }
 
     return fetchEvents(url);
+  });
+
+  useTask$(() => {
+    evCtx.events = initialEvents.value;
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -132,23 +152,18 @@ export default component$(() => {
         ))}
       </aside>
       <main class="md:h-full md:overflow-hidden lg:pt-2">
-        <Filter
-          categories={categories}
-          filterTags={filterTags}
-          filterCategories={filterCategories}
-          filterMaxDate={filterMaxDate}
-        />
+        <Filter />
 
         <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
           <p class="mb-5 text-xl">
             <strong class="text-[#ff7400]">
-              {filteredEvents.value.length}
+              {evCtx.filteredEvents.length}
             </strong>{" "}
             Eventos encontrados
           </p>
 
           <div class="space-y-10 ">
-            {filteredEvents.value.map((event, index) => (
+            {evCtx.filteredEvents.map((event, index) => (
               <div
                 key={`${event.id}-${index}`}
                 class="rounded-2xl border shadow-lg"
@@ -191,7 +206,7 @@ export default component$(() => {
                   <div class="flex flex-wrap gap-2">
                     {event.categories.map((category) => {
                       const isInFilter =
-                        filterCategories.value.includes(category);
+                        evCtx.filterCategories.includes(category);
 
                       return (
                         <span

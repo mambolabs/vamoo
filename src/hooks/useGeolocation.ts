@@ -1,6 +1,6 @@
 /* eslint-disable no-fallthrough */
-import { $, useSignal, useTask$ } from "@builder.io/qwik";
-import { isServer } from "@builder.io/qwik/build";
+import { $, useVisibleTask$ } from "@builder.io/qwik";
+import { useEventsContext } from "~/context/events-context";
 
 export type Loc = {
   latitude: number;
@@ -41,49 +41,43 @@ async function lookupLocation() {
 }
 
 export function useGeolocation() {
-  const loc = useSignal<Loc | null>(null);
+  const evCtx = useEventsContext();
 
   const setLocation = $(async () => {
     const { lat, lon } = await lookupLocation();
 
-    loc.value = {
+    evCtx.coord = {
       latitude: lat,
       longitude: lon,
     };
   });
 
-  useTask$(
-    () => {
-      if (isServer) return;
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          evCtx.coord = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+        },
+        async (error) => {
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+            case error.POSITION_UNAVAILABLE:
+            case error.TIMEOUT:
+              await setLocation();
 
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            loc.value = {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            };
-          },
-          async (error) => {
-            switch (error.code) {
-              case error.PERMISSION_DENIED:
-              case error.POSITION_UNAVAILABLE:
-              case error.TIMEOUT:
-                await setLocation();
-
-                break;
-              default:
-                console.log("An unknown error occurred.");
-                break;
-            }
-          },
-        );
-      } else {
-        setLocation();
-      }
-    },
-    { eagerness: "visible" },
-  );
-
-  return loc;
+              break;
+            default:
+              console.log("An unknown error occurred.");
+              break;
+          }
+        },
+      );
+    } else {
+      setLocation();
+    }
+  });
 }

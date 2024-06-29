@@ -1,4 +1,10 @@
-import { component$ } from "@builder.io/qwik";
+import {
+  component$,
+  noSerialize,
+  useContextProvider,
+  useStore,
+  useVisibleTask$,
+} from "@builder.io/qwik";
 import {
   QwikCityProvider,
   RouterOutlet,
@@ -6,15 +12,44 @@ import {
 } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/common/Head";
 
+import { MapsContext, type MapsStore } from "~/context/google-maps-context";
+import { Loader } from "@googlemaps/js-api-loader";
+import type { TEventsContext } from "~/context/events-context";
+import { EventsContext } from "~/context/events-context";
+
 import "./global.css";
 
 export default component$(() => {
-  /**
-   * The root of a QwikCity site always start with the <QwikCityProvider> component,
-   * immediately followed by the document's <head> and <body>.
-   *
-   * Don't remove the `<head>` and `<body>` elements.
-   */
+  const mapStore = useStore<MapsStore>({ mapsLoader: null });
+
+  const eventsStore = useStore<TEventsContext>({
+    events: [],
+    filteredEvents: [],
+    filterTags: [],
+    filterCategories: [],
+    filterMaxDate: new Date(),
+    coord: {
+      latitude: 0,
+      longitude: 0,
+    },
+    locationName: "",
+  });
+
+  useContextProvider(MapsContext, mapStore);
+  useContextProvider(EventsContext, eventsStore);
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(() => {
+    const apiKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY as string;
+
+    const loader = new Loader({
+      apiKey,
+      version: "weekly",
+      libraries: ["places"],
+    });
+
+    mapStore.mapsLoader = noSerialize(loader);
+  });
 
   return (
     <QwikCityProvider>

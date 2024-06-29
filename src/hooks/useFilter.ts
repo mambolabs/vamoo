@@ -1,24 +1,16 @@
-import { useSignal, useTask$, type Signal } from "@builder.io/qwik";
+import { useTask$ } from "@builder.io/qwik";
 import { startOfToday } from "date-fns";
 import { type TEvent } from "~/types";
-import { useGeolocation } from "./useGeolocation";
 import { fetchEvents } from "~/utils";
 import { EVENTS_ENDPOINT } from "~/constants";
+import { useEventsContext } from "~/context/events-context";
 const today = startOfToday();
 
-export function useFilter(events: Signal<TEvent[]>) {
-  const filteredEvents = useSignal(events.value);
-
-  const filterTags = useSignal<string[]>([]);
-
-  const filterCategories = useSignal<string[]>([]);
-
-  const filterMaxDate = useSignal<Date>(today);
-
-  const loc = useGeolocation();
+export function useFilter() {
+  const evCtx = useEventsContext();
 
   useTask$(async ({ track }) => {
-    const filterDate = track(() => filterMaxDate.value);
+    const filterDate = track(() => evCtx.filterMaxDate);
 
     if (filterDate.getTime() === today.getTime()) return;
 
@@ -26,46 +18,36 @@ export function useFilter(events: Signal<TEvent[]>) {
 
     url.searchParams.set("toDate", filterDate.toISOString());
 
-    const newEvents = await fetchEvents(url);
-
-    events.value = newEvents;
+    evCtx.events = await fetchEvents(url);
   });
 
   useTask$(({ track }) => {
-    const tags = track(() => filterTags.value);
+    const tags = track(() => evCtx.filterTags);
 
-    const categories = track(() => filterCategories.value);
+    const categories = track(() => evCtx.filterCategories);
 
-    const _events = track(() => events.value);
+    const events = track(() => evCtx.events);
 
     const filterResults: TEvent[] = [];
 
     if (tags.length > 0) {
       filterResults.push(
-        ..._events.filter((ev) => ev.tags.some((tag) => tags.includes(tag))),
+        ...events.filter((ev) => ev.tags.some((tag) => tags.includes(tag))),
       );
     }
 
     if (categories.length > 0) {
       filterResults.push(
-        ..._events.filter((ev) =>
+        ...events.filter((ev) =>
           ev.categories.some((cat) => categories.includes(cat)),
         ),
       );
     }
 
     if (tags.length || categories.length) {
-      filteredEvents.value = filterResults;
+      evCtx.filteredEvents = filterResults;
     } else {
-      filteredEvents.value = _events;
+      evCtx.filteredEvents = events;
     }
   });
-
-  return {
-    loc,
-    filteredEvents,
-    filterTags,
-    filterCategories,
-    filterMaxDate,
-  };
 }
