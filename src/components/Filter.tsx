@@ -72,10 +72,19 @@ export default component$<FilterProps>(
 
     const localFilterDistance = useSignal(1);
 
+    const hasFilters = useComputed$(() => {
+      return filterCategories.value.length > 0 || filterTags.value.length > 0;
+    });
+
     const relevanceFilterOptions = useSignal<RelevanceFilterItem[]>(() =>
       uniqueKeys([
-        { title: "Eventos mais recentes", key: "recent" },
-        { title: "Eventos mais proximos", key: "nearest" },
+        { title: "Eventos mais recentes", key: "recent", isActive: true },
+        { title: "Eventos mais proximos", key: "nearest", isActive: true },
+        {
+          title: "Minhas preferencias",
+          key: "preferencias",
+          isActive: hasFilters.value,
+        },
       ]),
     );
 
@@ -162,6 +171,25 @@ export default component$<FilterProps>(
       console.log("filterByRelevance", relevanceFilterOptions.value);
 
       /** TODO: */
+    });
+
+    useTask$(({ track }) => {
+      const _hasFilters = track(() => hasFilters.value);
+
+      const pref = relevanceFilterOptions.value.find((item) => {
+        return item.key === "preferencias";
+      });
+
+      if (pref) {
+        pref.isActive = _hasFilters;
+
+        relevanceFilterOptions.value = [
+          ...relevanceFilterOptions.value.filter(
+            (opt) => opt.key !== "preferencias",
+          ),
+          pref,
+        ];
+      }
     });
 
     useTask$(
