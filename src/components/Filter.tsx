@@ -65,7 +65,9 @@ export default component$(() => {
 
   const localFilterCategories = useSignal(evCtx.filterCategories);
 
-  const localFilterDistance = useSignal(1);
+  const localFilterDistance = useSignal(evCtx.distance);
+
+  const localLocationName = useSignal(evCtx.locationName);
 
   const hasFilters = useComputed$(() => {
     return evCtx.filterCategories.length > 0 || evCtx.filterTags.length > 0;
@@ -86,6 +88,7 @@ export default component$(() => {
   const handleClose = $(() => {
     localFilterCategories.value = evCtx.filterCategories;
     localFilterTags.value = evCtx.filterTags;
+    localLocationName.value = evCtx.locationName;
     showFilterModal.value = false;
   });
 
@@ -121,6 +124,8 @@ export default component$(() => {
 
   const locationFilter = $(() => {
     console.log("locationFilter");
+    if (!localLocationName.value) return;
+
     /** TODO: */
   });
 
@@ -166,6 +171,12 @@ export default component$(() => {
     console.log("filterByRelevance", relevanceFilterOptions.value);
 
     /** TODO: */
+  });
+
+  useTask$(({ track }) => {
+    const name = track(() => evCtx.locationName);
+
+    localLocationName.value = name;
   });
 
   useTask$(({ track }) => {
@@ -242,6 +253,31 @@ export default component$(() => {
             </svg>
             {displayDate.value}
           </button>
+          {evCtx.locationName && (
+            <button
+              onClick$={() => {
+                filterView.value = "location";
+                showFilterModal.value = true;
+              }}
+              type="button"
+              class="flex items-center gap-1 rounded-full border border-[#ff7400] px-4 py-1 text-sm text-[#5b5b5b]"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1em"
+                height="1em"
+                viewBox="0 0 32 32"
+              >
+                <path
+                  fill="#ff7400"
+                  d="M16 2A11.013 11.013 0 0 0 5 13a10.9 10.9 0 0 0 2.216 6.6s.3.395.349.452L16 30l8.439-9.953c.044-.053.345-.447.345-.447l.001-.003A10.9 10.9 0 0 0 27 13A11.013 11.013 0 0 0 16 2m0 15a4 4 0 1 1 4-4a4.005 4.005 0 0 1-4 4"
+                />
+                <circle cx="16" cy="13" r="4" fill="none" />
+              </svg>
+              <strong>{evCtx.distance} km</strong> -{" "}
+              <span class="font-normal">{evCtx.locationName}</span>
+            </button>
+          )}
 
           {evCtx.filterCategories.map((category, index) => (
             <button
@@ -624,7 +660,34 @@ export default component$(() => {
                         />
                       </div>
 
-                      <div class="flex flex-wrap gap-2"></div>
+                      <div class="flex flex-wrap gap-2">
+                        {localLocationName.value && (
+                          <div class="flex items-center gap-1.5 rounded-full border border-[#858585] px-3 py-1">
+                            <span class="text-sm font-medium">
+                              {localLocationName.value}
+                            </span>
+                            <button
+                              type="button"
+                              onClick$={$(() => (localLocationName.value = ""))}
+                            >
+                              <svg
+                                class="h-auto w-4"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 32 32"
+                              >
+                                <path
+                                  fill="currentColor"
+                                  d="M16 2C8.2 2 2 8.2 2 16s6.2 14 14 14s14-6.2 14-14S23.8 2 16 2m0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12s-5.4 12-12 12"
+                                />
+                                <path
+                                  fill="currentColor"
+                                  d="M21.4 23L16 17.6L10.6 23L9 21.4l5.4-5.4L9 10.6L10.6 9l5.4 5.4L21.4 9l1.6 1.6l-5.4 5.4l5.4 5.4z"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div class="space-y-2">
                       <p class="text-xl font-bold">Distancia</p>
