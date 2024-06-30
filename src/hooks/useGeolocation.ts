@@ -1,6 +1,7 @@
 /* eslint-disable no-fallthrough */
 import { $, useVisibleTask$ } from "@builder.io/qwik";
 import { useEventsContext } from "~/context/events-context";
+import { useGooeleMaps } from "~/context/google-maps-context";
 
 export type Loc = {
   latitude: number;
@@ -43,6 +44,8 @@ async function lookupLocation() {
 export function useGeolocation() {
   const evCtx = useEventsContext();
 
+  const maps = useGooeleMaps();
+
   const setLocation = $(async () => {
     const { lat, lon } = await lookupLocation();
 
@@ -79,5 +82,29 @@ export function useGeolocation() {
     } else {
       setLocation();
     }
+  });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async ({ track }) => {
+    const loc = track(() => evCtx.coord);
+
+    const mapsLoader = track(() => maps.mapsLoader);
+
+    if (!mapsLoader) return;
+
+    const { latitude, longitude } = loc;
+
+    const { Geocoder } = await mapsLoader.importLibrary("geocoding");
+
+    const geocoder = new Geocoder();
+
+    geocoder.geocode(
+      { location: { lat: latitude, lng: longitude } },
+      (results, status) => {
+        if (status === "OK" && results?.length) {
+          evCtx.locationName = results[0].formatted_address;
+        }
+      },
+    );
   });
 }
