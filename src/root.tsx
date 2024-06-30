@@ -33,6 +33,7 @@ export default component$(() => {
       longitude: 0,
     },
     locationName: "",
+    distance: 1,
   });
 
   useContextProvider(MapsContext, mapStore);

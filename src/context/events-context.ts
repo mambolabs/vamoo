@@ -12,6 +12,7 @@ export type TEventsContext = {
     longitude: number;
   };
   locationName: string;
+  distance: number;
 };
 
 export const EventsContext = createContextId<TEventsContext>("EventsSTore");
