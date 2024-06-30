@@ -1,4 +1,4 @@
-import { useTask$ } from "@builder.io/qwik";
+import { $, useTask$ } from "@builder.io/qwik";
 import { startOfToday } from "date-fns";
 import { type TEvent } from "~/types";
 import { fetchEvents } from "~/utils";
@@ -50,4 +50,31 @@ export function useFilter() {
       evCtx.filteredEvents = events;
     }
   });
+
+  const loadEvents = $(async () => {
+    const url = new URL(EVENTS_ENDPOINT);
+
+    url.searchParams.set("toDate", evCtx.filterMaxDate.toISOString());
+
+    url.searchParams.set(
+      "geoLocation",
+      evCtx.coord.longitude.toString() + "," + evCtx.coord.latitude.toString(),
+    );
+
+    url.searchParams.set("distance", "1km");
+
+    if (evCtx.events.length) {
+      const lastEvent = evCtx.events[evCtx.events.length - 1];
+
+      for (const value of lastEvent._esMeta.sort) {
+        url.searchParams.append("search_after[]", value.toString());
+      }
+    }
+
+    return fetchEvents(url);
+  });
+
+  return {
+    loadEvents,
+  };
 }

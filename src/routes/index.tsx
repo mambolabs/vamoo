@@ -1,5 +1,4 @@
 import {
-  $,
   component$,
   useComputed$,
   useSignal,
@@ -11,12 +10,12 @@ import EventModal from "~/components/modals/EventModal";
 import Filter from "~/components/Filter";
 import { useFilter } from "~/hooks/useFilter";
 import Avatar from "~/media/user.png?jsx";
-import type { TEvent } from "~/types";
 
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
+import { useGooeleMaps } from "~/context/google-maps-context";
 import { EVENTS_ENDPOINT, categories } from "~/constants";
 import { fetchEvents } from "~/utils";
 import { useEventsContext } from "~/context/events-context";
@@ -56,11 +55,12 @@ function viaDate(dateString: string) {
 }
 
 export default component$(() => {
+  const { mapsLoader } = useGooeleMaps();
 
   const evCtx = useEventsContext();
 
   useGeolocation();
-  useFilter();
+  const { loadEvents } = useFilter();
 
   const triggerRef = useSignal<HTMLDivElement>();
 
@@ -70,41 +70,17 @@ export default component$(() => {
 
   const isLoading = useSignal(false);
 
-  const events = useSignal<TEvent[]>(initialEvents.value);
-
   const previewEvent = useSignal(
-    events.value.length > 0 ? events.value[0] : null,
+    evCtx.events.length > 0 ? evCtx.events[0] : null,
   );
 
   const hasFilters = useComputed$(
     () => evCtx.filterCategories.length > 0 || evCtx.filterTags.length > 0,
   );
 
-  const loadEvents = $(async () => {
-    const url = new URL(EVENTS_ENDPOINT);
-
-    url.searchParams.set("toDate", evCtx.filterMaxDate.toISOString());
-
-    url.searchParams.set(
-      "geoLocation",
-      evCtx.coord.longitude.toString() + "," + evCtx.coord.latitude.toString(),
-    );
-
-    url.searchParams.set("distance", "1km");
-
-    if (events.value.length) {
-      const lastEvent = events.value[events.value.length - 1];
-
-      for (const value of lastEvent._esMeta.sort) {
-        url.searchParams.append("search_after[]", value.toString());
-      }
-    }
-
-    return fetchEvents(url);
-  });
-
   useTask$(() => {
     evCtx.events = initialEvents.value;
+    previewEvent.value = initialEvents.value[0];
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -126,7 +102,7 @@ export default component$(() => {
               return;
             }
 
-            events.value = [...events.value, ...newEvents];
+            evCtx.events = [...evCtx.events, ...newEvents];
           } catch (err) {
             console.log(err);
           } finally {
