@@ -46,26 +46,52 @@ export function useGeolocation() {
 
   const maps = useGooeleMaps();
 
-  const setLocation$ = $(async () => {
-    const { lat, lon, regionName } = await lookupLocation();
+  const setLocationName$ = $(async () => {
+    if (!maps.mapsLoader) return;
 
-    evCtx.locationName = regionName;
+    const { latitude, longitude } = evCtx.coord;
+
+    const { Geocoder } = await maps.mapsLoader.importLibrary("geocoding");
+
+    const geocoder = new Geocoder();
+
+    geocoder.geocode(
+      { location: { lat: latitude, lng: longitude } },
+      (results, status) => {
+        if (status === "OK" && results?.length) {
+          const { formatted_address, geometry } = results[0];
+
+          evCtx.locationName = formatted_address;
+          evCtx.coord = {
+            latitude: geometry.location.lat(),
+            longitude: geometry.location.lng(),
+          };
+        }
+      },
+    );
+  });
+
+  const setLocation$ = $(async () => {
+    const { lat, lon } = await lookupLocation();
 
     evCtx.coord = {
       latitude: lat,
       longitude: lon,
     };
+
+    await setLocationName$();
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           evCtx.coord = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           };
+          await setLocationName$();
         },
         async (error) => {
           switch (error.code) {
@@ -86,7 +112,7 @@ export function useGeolocation() {
     }
   });
 
-  // eslint-disable-next-line qwik/no-use-visible-task
+  // // eslint-disable-next-line qwik/no-use-visible-task
   // useVisibleTask$(async ({ track }) => {
   //   const loc = track(() => evCtx.coord);
 
@@ -104,7 +130,13 @@ export function useGeolocation() {
   //     { location: { lat: latitude, lng: longitude } },
   //     (results, status) => {
   //       if (status === "OK" && results?.length) {
-  //         evCtx.locationName = results[0].formatted_address;
+  //         const { formatted_address, geometry } = results[0];
+
+  //         evCtx.locationName = formatted_address;
+  //         evCtx.coord = {
+  //           latitude: geometry.location.lat(),
+  //           longitude: geometry.location.lng(),
+  //         };
   //       }
   //     },
   //   );

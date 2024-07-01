@@ -183,8 +183,6 @@ export default component$(() => {
   const filterByRelevance$ = $(() => {
     showRelevanceFilterModal.value = false;
 
-    console.log("filterByRelevance$", relevanceFilterOptions.value);
-
     /** TODO: */
   });
 
