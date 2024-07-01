@@ -46,8 +46,10 @@ export function useGeolocation() {
 
   const maps = useGooeleMaps();
 
-  const setLocation = $(async () => {
-    const { lat, lon } = await lookupLocation();
+  const setLocation$ = $(async () => {
+    const { lat, lon, regionName } = await lookupLocation();
+
+    evCtx.locationName = regionName;
 
     evCtx.coord = {
       latitude: lat,
@@ -56,7 +58,7 @@ export function useGeolocation() {
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(() => {
+  useVisibleTask$(async () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -70,7 +72,7 @@ export function useGeolocation() {
             case error.PERMISSION_DENIED:
             case error.POSITION_UNAVAILABLE:
             case error.TIMEOUT:
-              await setLocation();
+              await setLocation$();
 
               break;
             default:
@@ -80,31 +82,31 @@ export function useGeolocation() {
         },
       );
     } else {
-      setLocation();
+      await setLocation$();
     }
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(async ({ track }) => {
-    const loc = track(() => evCtx.coord);
+  // useVisibleTask$(async ({ track }) => {
+  //   const loc = track(() => evCtx.coord);
 
-    const mapsLoader = track(() => maps.mapsLoader);
+  //   const mapsLoader = track(() => maps.mapsLoader);
 
-    if (!mapsLoader) return;
+  //   if (!mapsLoader) return;
 
-    const { latitude, longitude } = loc;
+  //   const { latitude, longitude } = loc;
 
-    const { Geocoder } = await mapsLoader.importLibrary("geocoding");
+  //   const { Geocoder } = await mapsLoader.importLibrary("geocoding");
 
-    const geocoder = new Geocoder();
+  //   const geocoder = new Geocoder();
 
-    geocoder.geocode(
-      { location: { lat: latitude, lng: longitude } },
-      (results, status) => {
-        if (status === "OK" && results?.length) {
-          evCtx.locationName = results[0].formatted_address;
-        }
-      },
-    );
-  });
+  //   geocoder.geocode(
+  //     { location: { lat: latitude, lng: longitude } },
+  //     (results, status) => {
+  //       if (status === "OK" && results?.length) {
+  //         evCtx.locationName = results[0].formatted_address;
+  //       }
+  //     },
+  //   );
+  // });
 }

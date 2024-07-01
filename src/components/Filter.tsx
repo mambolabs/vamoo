@@ -6,6 +6,7 @@ import {
   $,
   useTask$,
   useComputed$,
+  sync$,
 } from "@builder.io/qwik";
 
 import Swiper from "swiper";
@@ -25,6 +26,8 @@ import RelevanceSortModal from "./modals/RelevanceSortModal";
 import type { RelevanceFilterItem } from "~/types";
 import { useEventsContext } from "~/context/events-context";
 import { categories } from "~/constants";
+import { usePlacesAutocomplete } from "~/hooks/usePlacesAutocomplete";
+import { Form } from "@builder.io/qwik-city";
 
 const MAX_TAGS = 5;
 
@@ -69,6 +72,15 @@ export default component$(() => {
 
   const localLocationName = useSignal(evCtx.locationName);
 
+  const {
+    fetchSuggestions$,
+    searchLocation,
+    suggestions,
+    loading,
+    handlePlaceSelect$,
+    showSuggestions,
+  } = usePlacesAutocomplete();
+
   const hasFilters = useComputed$(() => {
     return evCtx.filterCategories.length > 0 || evCtx.filterTags.length > 0;
   });
@@ -85,14 +97,14 @@ export default component$(() => {
     ]),
   );
 
-  const handleClose = $(() => {
+  const handleClose$ = $(() => {
     localFilterCategories.value = evCtx.filterCategories;
     localFilterTags.value = evCtx.filterTags;
     localLocationName.value = evCtx.locationName;
     showFilterModal.value = false;
   });
 
-  const addTag = $(() => {
+  const addTag$ = $(() => {
     if (!newTagInputRef.value) return;
 
     const tag = newTagInputRef.value.value;
@@ -108,7 +120,7 @@ export default component$(() => {
     newTagInputRef.value.value = "";
   });
 
-  const tagsViewFilters = $(() => {
+  const tagsViewFilters$ = $(() => {
     if (localFilterTags.value.length) {
       evCtx.filterTags = localFilterTags.value;
     } else {
@@ -122,27 +134,27 @@ export default component$(() => {
     }
   });
 
-  const locationFilter = $(() => {
-    console.log("locationFilter");
+  const locationFilter$ = $(() => {
+    console.log("locationFilter$");
     if (!localLocationName.value) return;
 
     /** TODO: */
   });
 
-  const timeFilter = $(() => {
+  const timeFilter$ = $(() => {
     evCtx.filterMaxDate = localMaxDate.value;
   });
 
   const applyFilters = $(() => {
     switch (filterView.value) {
       case "tags":
-        tagsViewFilters();
+        tagsViewFilters$();
         break;
       case "location":
-        locationFilter();
+        locationFilter$();
         break;
       case "time":
-        timeFilter();
+        timeFilter$();
         break;
     }
 
@@ -165,10 +177,10 @@ export default component$(() => {
     return `${rel}, ${dateStr}`;
   });
 
-  const filterByRelevance = $(() => {
+  const filterByRelevance$ = $(() => {
     showRelevanceFilterModal.value = false;
 
-    console.log("filterByRelevance", relevanceFilterOptions.value);
+    console.log("filterByRelevance$", relevanceFilterOptions.value);
 
     /** TODO: */
   });
@@ -367,7 +379,7 @@ export default component$(() => {
         <div class="flex h-full flex-col">
           <div class="flex items-center justify-between bg-black px-5 py-3 text-white">
             <p class="text-xl font-semibold">Filtros</p>
-            <button type="button" onClick$={handleClose}>
+            <button type="button" onClick$={handleClose$}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="size-6"
@@ -557,7 +569,7 @@ export default component$(() => {
                           onKeyDown$={(e) => {
                             if (e.key === "Enter") {
                               e.preventDefault();
-                              addTag();
+                              addTag$();
                             }
                           }}
                           disabled={localFilterTags.value.length === MAX_TAGS}
@@ -565,7 +577,7 @@ export default component$(() => {
 
                         <button
                           type="button"
-                          onClick$={() => addTag()}
+                          onClick$={() => addTag$()}
                           class="absolute right-0 top-1/2 flex aspect-square h-full -translate-y-1/2 items-center justify-center rounded-full text-[#9e9e9e] hover:bg-gray-200"
                         >
                           <svg
@@ -649,17 +661,49 @@ export default component$(() => {
                         </svg>
 
                         <input
+                          id="location-search"
                           type="text"
                           class="w-full rounded-lg border-2 border-[#9e9e9e] p-2 pl-8 caret-[#ff7b0d] focus:text-[#9e9e9e]  focus:outline-[#ff7b0d]"
                           name="location"
-                          onKeyDown$={(e) => {
+                          disabled={loading}
+                          onKeyDown$={$((e) => {
                             if (e.key === "Enter") {
-                              e.preventDefault();
+                              fetchSuggestions$();
                             }
-                          }}
+                          })}
+                          bind:value={searchLocation}
                         />
                       </div>
 
+                      {loading && (
+                        <div class="h-1 w-full overflow-hidden rounded-sm bg-[#ff7b0d]/10">
+                          <div class="animate-loading-progress origin-left-right h-full w-full bg-[#ff7b0d]"></div>
+                        </div>
+                      )}
+                      {showSuggestions.value && (
+                        <ul class="border border-[#858585] bg-white">
+                          {suggestions.value.map((suggestion) => (
+                            <li
+                              key={suggestion.place_id}
+                              role="option"
+                              class="cursor-pointer border-t border-[#858585] px-2 py-1 text-sm first:border-none hover:bg-[#fafafa]"
+                              onClick$={$(() => {
+                                handlePlaceSelect$(suggestion);
+                              })}
+                            >
+                              <strong>
+                                {suggestion.structured_formatting.main_text}
+                              </strong>{" "}
+                              <span>
+                                {
+                                  suggestion.structured_formatting
+                                    .secondary_text
+                                }
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <div class="flex flex-wrap gap-2">
                         {localLocationName.value && (
                           <div class="flex items-center gap-1.5 rounded-full border border-[#858585] px-3 py-1">
@@ -739,7 +783,7 @@ export default component$(() => {
           <div class="flex items-center justify-center gap-16 bg-white px-5 py-3">
             <button
               type="button"
-              onClick$={handleClose}
+              onClick$={handleClose$}
               class="rounded-lg border border-[#ff7b0d] px-5 py-1 font-semibold text-[#ff7b0d]"
             >
               Fetchar
@@ -758,10 +802,10 @@ export default component$(() => {
       <RelevanceSortModal
         showModal={showRelevanceFilterModal}
         filterOptions={relevanceFilterOptions}
-        altFilter={$(() => {
+        altFilter$={$(() => {
           showFilterModal.value = true;
         })}
-        applyFilters={filterByRelevance}
+        applyFilters$={filterByRelevance$}
       />
     </>
   );

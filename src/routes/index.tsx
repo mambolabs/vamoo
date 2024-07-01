@@ -15,7 +15,6 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-import { useGooeleMaps } from "~/context/google-maps-context";
 import { EVENTS_ENDPOINT, categories } from "~/constants";
 import { fetchEvents } from "~/utils";
 import { useEventsContext } from "~/context/events-context";
@@ -55,8 +54,6 @@ function viaDate(dateString: string) {
 }
 
 export default component$(() => {
-  const { mapsLoader } = useGooeleMaps();
-
   const evCtx = useEventsContext();
 
   useGeolocation();

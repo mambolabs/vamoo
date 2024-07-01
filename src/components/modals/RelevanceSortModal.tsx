@@ -21,12 +21,12 @@ import type { RelevanceFilterItem } from "~/types";
 type Props = {
   showModal: Signal<boolean>;
   filterOptions: Signal<RelevanceFilterItem[]>;
-  altFilter: QRL<() => void>;
-  applyFilters: QRL<() => void>;
+  altFilter$: QRL<() => void>;
+  applyFilters$: QRL<() => void>;
 };
 
 export default component$<Props>(
-  ({ showModal, filterOptions, altFilter, applyFilters }) => {
+  ({ showModal, filterOptions, altFilter$, applyFilters$ }) => {
     useTask$(
       ({ cleanup, track }) => {
         const options = track(() => filterOptions.value);
@@ -125,7 +125,7 @@ export default component$<Props>(
                       type="button"
                       onClick$={() => {
                         showModal.value = false;
-                        altFilter();
+                        altFilter$();
                       }}
                       class="ml-auto rounded-lg bg-[#ff7b0d] p-2 font-semibold text-white shadow md:px-5 md:py-1"
                     >
@@ -161,7 +161,7 @@ export default component$<Props>(
             </button>
             <button
               type="button"
-              onClick$={applyFilters}
+              onClick$={applyFilters$}
               class="rounded-lg bg-[#ff7b0d] px-5 py-1 font-semibold text-white"
             >
               Ver Eventos
