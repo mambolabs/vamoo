@@ -24,7 +24,6 @@ export default component$(() => {
 
   const eventsStore = useStore<TEventsContext>({
     events: [],
-    filteredEvents: [],
     filterTags: [],
     filterCategories: [],
     filterMaxDate: new Date(),

@@ -3,7 +3,6 @@ import type { TEvent } from "~/types";
 
 export type TEventsContext = {
   events: TEvent[];
-  filteredEvents: TEvent[];
   filterTags: string[];
   filterCategories: string[];
   filterMaxDate: Date;

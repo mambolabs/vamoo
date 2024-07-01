@@ -6,7 +6,6 @@ import {
   $,
   useTask$,
   useComputed$,
-  sync$,
 } from "@builder.io/qwik";
 
 import Swiper from "swiper";
@@ -27,7 +26,7 @@ import type { RelevanceFilterItem } from "~/types";
 import { useEventsContext } from "~/context/events-context";
 import { categories } from "~/constants";
 import { usePlacesAutocomplete } from "~/hooks/usePlacesAutocomplete";
-import { Form } from "@builder.io/qwik-city";
+import { useFilter } from "~/hooks/useFilter";
 
 const MAX_TAGS = 5;
 
@@ -72,6 +71,8 @@ export default component$(() => {
 
   const localLocationName = useSignal(evCtx.locationName);
 
+  const { loadEvents } = useFilter();
+
   const {
     fetchSuggestions$,
     searchLocation,
@@ -84,6 +85,8 @@ export default component$(() => {
   const hasFilters = useComputed$(() => {
     return evCtx.filterCategories.length > 0 || evCtx.filterTags.length > 0;
   });
+
+  const canSearchLocation = useSignal(!loading);
 
   const relevanceFilterOptions = useSignal<RelevanceFilterItem[]>(() =>
     uniqueKeys([
@@ -135,17 +138,15 @@ export default component$(() => {
   });
 
   const locationFilter$ = $(() => {
-    console.log("locationFilter$");
     if (!localLocationName.value) return;
-
-    /** TODO: */
+    evCtx.distance = localFilterDistance.value;
   });
 
   const timeFilter$ = $(() => {
     evCtx.filterMaxDate = localMaxDate.value;
   });
 
-  const applyFilters = $(() => {
+  const applyFilters = $(async () => {
     switch (filterView.value) {
       case "tags":
         tagsViewFilters$();
@@ -157,6 +158,8 @@ export default component$(() => {
         timeFilter$();
         break;
     }
+
+    evCtx.events = await loadEvents();
 
     showFilterModal.value = false;
   });
@@ -183,6 +186,12 @@ export default component$(() => {
     console.log("filterByRelevance$", relevanceFilterOptions.value);
 
     /** TODO: */
+  });
+
+  useTask$(({ track }) => {
+    const localSearch = track(() => localLocationName.value);
+
+    canSearchLocation.value = !localSearch;
   });
 
   useTask$(({ track }) => {
@@ -503,7 +512,7 @@ export default component$(() => {
                               type="button"
                               disabled={
                                 localFilterCategories.value.length ===
-                                MAX_CATEGORIES
+                                  MAX_CATEGORIES && !isInFilter
                               }
                               onClick$={() => {
                                 if (isInFilter) {
@@ -665,7 +674,7 @@ export default component$(() => {
                           type="text"
                           class="w-full rounded-lg border-2 border-[#9e9e9e] p-2 pl-8 caret-[#ff7b0d] focus:text-[#9e9e9e]  focus:outline-[#ff7b0d]"
                           name="location"
-                          disabled={loading}
+                          disabled={!canSearchLocation.value}
                           onKeyDown$={$((e) => {
                             if (e.key === "Enter") {
                               fetchSuggestions$();

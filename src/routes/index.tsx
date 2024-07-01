@@ -81,7 +81,7 @@ export default component$(() => {
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track, cleanup }) => {
+  useVisibleTask$(async ({ track, cleanup }) => {
     const el = track(() => triggerRef.value);
 
     if (!el) return;
@@ -129,14 +129,12 @@ export default component$(() => {
 
         <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
           <p class="mb-5 text-xl">
-            <strong class="text-[#ff7400]">
-              {evCtx.filteredEvents.length}
-            </strong>{" "}
+            <strong class="text-[#ff7400]">{evCtx.events.length}</strong>{" "}
             Eventos encontrados
           </p>
 
           <div class="space-y-10 ">
-            {evCtx.filteredEvents.map((event, index) => (
+            {evCtx.events.map((event, index) => (
               <div
                 key={`${event.id}-${index}`}
                 class="rounded-2xl border shadow-lg"
