@@ -249,7 +249,7 @@ export default component$(() => {
 
   return (
     <>
-      <div class="flex  flex-col-reverse justify-center gap-1 rounded-2xl lg:flex-row lg:items-center lg:justify-between lg:gap-5 lg:border lg:px-3 lg:py-3">
+      <div class="flex flex-col-reverse justify-center gap-1 rounded-2xl lg:flex-row lg:items-center lg:justify-between lg:gap-5 lg:border lg:px-3 lg:py-3">
         <div class="flex flex-wrap gap-2 max-lg:p-2.5">
           <button
             onClick$={() => {
@@ -684,7 +684,7 @@ export default component$(() => {
 
                       {loading && (
                         <div class="h-1 w-full overflow-hidden rounded-sm bg-[#ff7b0d]/10">
-                          <div class="animate-loading-progress origin-left-right h-full w-full bg-[#ff7b0d]"></div>
+                          <div class="h-full w-full origin-left-right animate-loading-progress bg-[#ff7b0d]"></div>
                         </div>
                       )}
                       {showSuggestions.value && (
