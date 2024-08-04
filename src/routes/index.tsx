@@ -14,7 +14,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 import { AD_STEP, EVENTS_ENDPOINT, categories } from "~/constants";
-import { fetchEvents } from "~/utils";
+import { canShowAds, fetchEvents } from "~/utils";
 import { useEventsContext } from "~/context/events-context";
 import { useGeolocation } from "~/hooks/useGeolocation";
 import EventCard from "~/components/EventCard";
@@ -126,7 +126,7 @@ export default component$(() => {
                   }}
                 />
 
-                {index > 0 && index % (AD_STEP - 1) === 0 && (
+                {canShowAds(index) && (
                   <div class="grid place-items-center rounded-2xl bg-blue-400 py-20 text-white">
                     <p class="text-4xl font-bold uppercase">
                       Ad Space {index / (AD_STEP - 1)}
