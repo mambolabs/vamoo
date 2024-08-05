@@ -57,9 +57,13 @@ export default component$<AdSenseProps>(
     });
 
     return (
-      <div class={className}>
+      <div>
         <ins
-          class="adsbygoogle"
+          class={[
+            "adsbygoogle",
+            type === "text-only-ad" && "h-[100px]",
+            className,
+          ]}
           style="display:block"
           {...properties.value}
           data-ad-client={GOOGLE_ADSENSE_PUBLISHER_ID}
