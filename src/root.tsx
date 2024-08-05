@@ -57,6 +57,10 @@ export default component$(() => {
     <QwikCityProvider>
       <head>
         <meta charset="utf-8" />
+        <meta
+          name="google-adsense-account"
+          content={GOOGLE_ADSENSE_PUBLISHER_ID}
+        ></meta>
         <link rel="manifest" href="/manifest.json" />
         <RouterHead />
         <script
