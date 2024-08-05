@@ -2,6 +2,7 @@ import { component$, useComputed$, type QRL } from "@builder.io/qwik";
 import type { TEvent } from "~/types";
 import Avatar from "~/media/user.png?jsx";
 import { useEventsContext } from "~/context/events-context";
+import { getDistanceKm } from "~/utils";
 
 type EventCardProps = { event: TEvent; handleClick$: QRL<() => void> };
 
@@ -36,7 +37,7 @@ export default component$<EventCardProps>(({ event, handleClick$ }) => {
   );
 
   const distanceKm = useComputed$(() => {
-    return Math.floor(event.distanceKm / 1000);
+    return Math.floor(getDistanceKm(event.distanceKm));
   });
 
   return (
