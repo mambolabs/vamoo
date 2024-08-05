@@ -29,6 +29,12 @@ export const useEvents = routeLoader$(async () => {
   return fetchEvents(url);
 });
 
+const sidebarLinks: { name: string; href: string }[] = [
+  { name: "Terms of Service", href: "#terms-of-service" },
+
+  { name: "Privacy Policy", href: "#privacy-policy" },
+];
+
 export default component$(() => {
   const evCtx = useEventsContext();
 
@@ -95,13 +101,28 @@ export default component$(() => {
 
   return (
     <div class="mx-auto grid grid-cols-1 gap-10 overflow-hidden md:h-screen lg:grid-cols-[16%,1fr,16%] lg:px-5 xl:max-w-[1340px] 2xl:px-0">
-      <aside class="hidden lg:block">
-        <p class="text-2xl font-bold">Categorias</p>
-        {categories.map((category, index) => (
-          <p key={index} class="font-semibold capitalize text-[#2d2d2d]">
-            {category}
-          </p>
-        ))}
+      <aside class="hidden space-y-5 lg:block">
+        <div>
+          <p class="mb-2 text-2xl font-bold">Categorias</p>
+          <div>
+            {categories.map((category, index) => (
+              <p key={index} class="font-semibold capitalize text-[#2d2d2d]">
+                {category}
+              </p>
+            ))}
+          </div>
+        </div>
+        <div class="">
+          {sidebarLinks.map((link, index) => (
+            <a
+              key={link.name + index}
+              href={link.href}
+              class="block font-semibold capitalize text-[#2d2d2d]"
+            >
+              {link.name}
+            </a>
+          ))}
+        </div>
       </aside>
       <main class="md:h-full md:overflow-hidden  ">
         {/* AD SPACE */}
