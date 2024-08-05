@@ -34,7 +34,7 @@ async function lookupLocation() {
 
   const ip = item.replace("ip=", "");
 
-  const res = (await fetch(`http://ip-api.com/json/${ip}`).then((res) =>
+  const res = (await fetch(`https://ip-api.com/json/${ip}`).then((res) =>
     res.json(),
   )) as GeoLocationResponse;
 
