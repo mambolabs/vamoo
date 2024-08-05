@@ -16,3 +16,7 @@ export function canShowAds(index: number) {
 
   return (index + 1) % AD_STEP === 0;
 }
+
+export function getDistanceKm(distance: number) {
+  return distance / 1000;
+}
