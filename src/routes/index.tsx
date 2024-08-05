@@ -69,6 +69,8 @@ export default component$(() => {
               if (!newEvents.length) {
                 isLoading.value = false;
 
+                evCtx.events = [...evCtx.events, ...evCtx.events];
+
                 return;
               }
 
@@ -129,7 +131,7 @@ export default component$(() => {
                 {canShowAds(index) && (
                   <div class="grid place-items-center rounded-2xl bg-blue-400 py-20 text-white">
                     <p class="text-4xl font-bold uppercase">
-                      Ad Space {index / (AD_STEP - 1)}
+                      Ad Space {(index + 1) / AD_STEP}
                     </p>
                   </div>
                 )}
