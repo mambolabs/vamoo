@@ -35,6 +35,10 @@ export default component$<EventCardProps>(({ event, handleClick$ }) => {
     () => evCtx.filterCategories.length > 0 || evCtx.filterTags.length > 0,
   );
 
+  const distanceKm = useComputed$(() => {
+    return Math.floor(event.distanceKm / 1000);
+  });
+
   return (
     <div class="rounded-2xl border shadow-lg" onClick$={handleClick$}>
       <div class="flex items-center gap-2 p-5">
@@ -54,6 +58,7 @@ export default component$<EventCardProps>(({ event, handleClick$ }) => {
           </span>
           <span class="rounded-full bg-[#ff7400] px-2.5 py-1 text-sm font-semibold text-white">
             {event.placeName}
+            {distanceKm.value && `, ${distanceKm.value} km`}
           </span>
         </div>
         <img
