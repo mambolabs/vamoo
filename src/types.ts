@@ -37,6 +37,7 @@ export type TEvent = {
   createdAt: string;
   updatedAt: string;
   userId: number;
+  distanceKm: number;
   _esMeta: {
     sort: [number, string];
   };
