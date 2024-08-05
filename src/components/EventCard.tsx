@@ -73,15 +73,15 @@ export default component$<EventCardProps>(({ event, handleClick$ }) => {
       <div class="space-y-5 p-5">
         <div class="flex flex-wrap gap-2">
           {event.categories.map((category) => {
-            const isInFilter = evCtx.filterCategories.includes(category);
+            const isInFilter =
+              hasFilters.value && evCtx.filterCategories.includes(category);
 
             return (
               <span
                 key={category}
                 class={[
                   "rounded-full border bg-black  px-2.5 py-1 text-sm font-semibold text-white",
-                  hasFilters.value &&
-                    (isInFilter ? "opacity-100" : "opacity-50"),
+                  isInFilter ? "opacity-100" : "opacity-50",
                 ]}
               >
                 {category}
