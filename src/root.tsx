@@ -18,6 +18,7 @@ import type { TEventsContext } from "~/context/events-context";
 import { EventsContext } from "~/context/events-context";
 
 import "./global.css";
+import { startOfToday } from "date-fns";
 
 export default component$(() => {
   const mapStore = useStore<MapsStore>({ mapsLoader: null });
@@ -26,7 +27,7 @@ export default component$(() => {
     events: [],
     filterTags: [],
     filterCategories: [],
-    filterMaxDate: new Date(),
+    filterMaxDate: startOfToday(),
     coord: {
       latitude: 0,
       longitude: 0,
