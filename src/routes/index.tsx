@@ -13,11 +13,12 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-import { AD_STEP, EVENTS_ENDPOINT, categories } from "~/constants";
+import { EVENTS_ENDPOINT, categories } from "~/constants";
 import { canShowAds, fetchEvents } from "~/utils";
 import { useEventsContext } from "~/context/events-context";
 import { useGeolocation } from "~/hooks/useGeolocation";
 import EventCard from "~/components/EventCard";
+import Adsense from "~/components/Adsense";
 
 export const useEvents = routeLoader$(async () => {
   const url = new URL(EVENTS_ENDPOINT);
@@ -125,10 +126,8 @@ export default component$(() => {
         </div>
       </aside>
       <main class="md:h-full md:overflow-hidden  ">
-        {/* AD SPACE */}
-        <div class="mb-2 grid place-items-center bg-blue-400 py-7">
-          <p class="text-4xl font-bold uppercase text-white">Top Ad Space</p>
-        </div>
+        <Adsense type="text-only-ad" class="max-h-[100px]" />
+
         <Filter />
 
         <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
@@ -149,13 +148,7 @@ export default component$(() => {
                   }}
                 />
 
-                {canShowAds(index) && (
-                  <div class="grid place-items-center rounded-2xl bg-blue-400 py-20 text-white">
-                    <p class="text-4xl font-bold uppercase">
-                      Ad Space {(index + 1) / AD_STEP}
-                    </p>
-                  </div>
-                )}
+                {canShowAds(index) && <Adsense key={`adsense-${index}`} />}
               </>
             ))}
           </div>
@@ -181,14 +174,9 @@ export default component$(() => {
         )}
       </main>
       <aside class="space-y-5 pt-2">
-        {/* AD SPACE */}
-        <div class="mb-2 grid h-[40vh] place-items-center rounded-2xl bg-gradient-to-tl from-pink-600 to-red-500">
-          <p class="text-2xl font-bold uppercase text-white">Ad Space</p>
-        </div>
-        {/* AD SPACE */}
-        <div class="mb-2 grid h-[40vh] place-items-center rounded-2xl bg-gradient-to-br from-amber-700 to-pink-700">
-          <p class="text-2xl font-bold uppercase text-white">Ad Space</p>
-        </div>
+        <Adsense type="vertical-ad" class="max-h-[40vh]" />
+
+        <Adsense type="vertical-ad" class="max-h-[40vh]" />
       </aside>
     </div>
   );
