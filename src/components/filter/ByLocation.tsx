@@ -49,6 +49,7 @@ export default component$<ByLocationProps>(
 
             <input
               id="location-search"
+              placeholder="Endereço"
               type="text"
               class="w-full rounded-lg border-2 border-[#9e9e9e] p-2 pl-8 caret-[#ff7b0d] focus:text-[#9e9e9e]  focus:outline-[#ff7b0d]"
               name="location"

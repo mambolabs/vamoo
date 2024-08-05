@@ -106,7 +106,7 @@ export default component$(() => {
       <main class="md:h-full md:overflow-hidden  ">
         {/* AD SPACE */}
         <div class="mb-2 grid place-items-center bg-blue-400 py-7">
-          <p class="text-4xl font-bold uppercase text-white">Ad Space</p>
+          <p class="text-4xl font-bold uppercase text-white">Top Ad Space</p>
         </div>
         <Filter />
 
