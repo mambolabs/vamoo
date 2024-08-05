@@ -1,5 +1,6 @@
 /* eslint-disable no-fallthrough */
 import { $, useVisibleTask$ } from "@builder.io/qwik";
+import { server$ } from "@builder.io/qwik-city";
 import { useEventsContext } from "~/context/events-context";
 import { useGooeleMaps } from "~/context/google-maps-context";
 
@@ -25,20 +26,39 @@ type GeoLocationResponse = {
   query: string;
 };
 
+const getLocationForIp = server$(async (ip: string) => {
+  /***
+   *  no https
+   */
+  const res = await fetch(`http://ip-api.com/json/${ip}`);
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const data = (await res.json()) as GeoLocationResponse;
+
+  return data;
+});
+
 async function lookupLocation() {
-  const trace = await fetch("https://1.0.0.1/cdn-cgi/trace").then((res) =>
-    res.text(),
-  );
+  try {
+    const trace = await fetch("https://1.0.0.1/cdn-cgi/trace").then((res) =>
+      res.text(),
+    );
 
-  const [item] = trace.split("\n").filter((item) => item.startsWith("ip="));
+    const [item] = trace.split("\n").filter((item) => item.startsWith("ip="));
 
-  const ip = item.replace("ip=", "");
+    const ip = item.replace("ip=", "");
 
-  const res = (await fetch(`https://ip-api.com/json/${ip}`).then((res) =>
-    res.json(),
-  )) as GeoLocationResponse;
+    const res = await getLocationForIp(ip);
 
-  return res;
+    return res;
+  } catch (err) {
+    console.log(err);
+
+    return null;
+  }
 }
 
 export function useGeolocation() {
@@ -72,11 +92,15 @@ export function useGeolocation() {
   });
 
   const setLocation$ = $(async () => {
-    const { lat, lon } = await lookupLocation();
+    const res = await lookupLocation();
+
+    if (!res) {
+      return;
+    }
 
     evCtx.coord = {
-      latitude: lat,
-      longitude: lon,
+      latitude: res.lat,
+      longitude: res.lon,
     };
 
     await setLocationName$();
@@ -111,34 +135,4 @@ export function useGeolocation() {
       await setLocation$();
     }
   });
-
-  // // eslint-disable-next-line qwik/no-use-visible-task
-  // useVisibleTask$(async ({ track }) => {
-  //   const loc = track(() => evCtx.coord);
-
-  //   const mapsLoader = track(() => maps.mapsLoader);
-
-  //   if (!mapsLoader) return;
-
-  //   const { latitude, longitude } = loc;
-
-  //   const { Geocoder } = await mapsLoader.importLibrary("geocoding");
-
-  //   const geocoder = new Geocoder();
-
-  //   geocoder.geocode(
-  //     { location: { lat: latitude, lng: longitude } },
-  //     (results, status) => {
-  //       if (status === "OK" && results?.length) {
-  //         const { formatted_address, geometry } = results[0];
-
-  //         evCtx.locationName = formatted_address;
-  //         evCtx.coord = {
-  //           latitude: geometry.location.lat(),
-  //           longitude: geometry.location.lng(),
-  //         };
-  //       }
-  //     },
-  //   );
-  // });
 }
