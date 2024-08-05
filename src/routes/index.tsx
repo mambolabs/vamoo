@@ -6,7 +6,7 @@ import {
 } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
 import EventModal from "~/components/modals/EventModal";
-import Filter from "~/components/Filter";
+import Filter from "~/components/filter";
 import { useFilter } from "~/hooks/useFilter";
 
 import "swiper/css";
