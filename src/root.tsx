@@ -19,6 +19,7 @@ import { EventsContext } from "~/context/events-context";
 
 import "./global.css";
 import { startOfToday } from "date-fns";
+import { GOOGLE_ADSENSE_PUBLISHER_ID } from "./constants";
 
 export default component$(() => {
   const mapStore = useStore<MapsStore>({ mapsLoader: null });
@@ -58,6 +59,11 @@ export default component$(() => {
         <meta charset="utf-8" />
         <link rel="manifest" href="/manifest.json" />
         <RouterHead />
+        <script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${GOOGLE_ADSENSE_PUBLISHER_ID}`}
+          crossOrigin="anonymous"
+        ></script>
       </head>
       <body lang="en">
         <RouterOutlet />
