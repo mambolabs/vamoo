@@ -14,18 +14,27 @@ type AdSenseProps = {
 
 type AD = Record<string, unknown>;
 
+/**
+ *  replace with your own from Google AdSense
+ */
 const HorizontalFeedAd: AD = {
   "data-ad-slot": HORIZONTAL_FEED_AD_SLOT,
   "data-ad-format": "fluid",
   "data-ad-layout-key": "-f1+5r+5a-db+57",
 };
 
+/**
+ *  replace with your own from Google AdSense
+ */
 const VerticalAd: AD = {
   "data-ad-slot": VERTICAL_AD_SLOT,
   "data-ad-format": "auto",
   "data-full-width-responsive": "true",
 };
 
+/**
+ *  replace with your own from Google AdSense
+ */
 const TextOnlyAd: AD = {
   "data-ad-slot": TEXT_ONLY_AD_SLOT,
   "data-ad-format": "fluid",
@@ -35,8 +44,11 @@ const TextOnlyAd: AD = {
 export default component$<AdSenseProps>(
   ({ type = "horizontal-feed-ad", class: className }) => {
     useTask$(() => {
-      if (!isServer) {
+      if (isServer) return;
+      try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (err) {
+        console.log(err);
       }
     });
 
@@ -58,16 +70,22 @@ export default component$<AdSenseProps>(
 
     return (
       <div>
-        <ins
-          class={[
-            "adsbygoogle",
-            type === "text-only-ad" && "h-[100px]",
-            className,
-          ]}
-          style="display:block"
-          {...properties.value}
-          data-ad-client={GOOGLE_ADSENSE_PUBLISHER_ID}
-        ></ins>
+        {process.env.NODE_ENV === "production" ? (
+          <ins
+            class={[
+              "adsbygoogle",
+              type === "text-only-ad" && "h-[100px]",
+              className,
+            ]}
+            style="display:block"
+            {...properties.value}
+            data-ad-client={GOOGLE_ADSENSE_PUBLISHER_ID}
+          ></ins>
+        ) : (
+          <div class="grid h-[9rem] place-items-center bg-gray-200 ">
+            <p class="text-2xl font-bold uppercase">AD Space</p>
+          </div>
+        )}
       </div>
     );
   },
