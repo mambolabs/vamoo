@@ -142,7 +142,7 @@ export default component$(() => {
         <Filter />
 
         <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
-          <p class="mb-5 text-xl">
+          <p class="mb-5 text-xl max-lg:px-2.5">
             <strong class="text-[#ff7400]">{evCtx.events.length}</strong>{" "}
             Eventos encontrados
           </p>
