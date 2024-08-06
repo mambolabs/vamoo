@@ -1,4 +1,4 @@
-import { component$, useComputed$, useTask$ } from "@builder.io/qwik";
+import { component$, Slot, useComputed$, useTask$ } from "@builder.io/qwik";
 import { isServer } from "@builder.io/qwik/build";
 import {
   GOOGLE_ADSENSE_PUBLISHER_ID,
@@ -82,9 +82,7 @@ export default component$<AdSenseProps>(
             data-ad-client={GOOGLE_ADSENSE_PUBLISHER_ID}
           ></ins>
         ) : (
-          <div class="grid h-[9rem] place-items-center bg-gray-200 ">
-            <p class="text-2xl font-bold uppercase">AD Space</p>
-          </div>
+          <Slot />
         )}
       </div>
     );
