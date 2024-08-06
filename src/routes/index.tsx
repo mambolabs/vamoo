@@ -24,7 +24,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-import { EVENTS_ENDPOINT, categories } from "~/constants";
+import { AD_STEP, EVENTS_ENDPOINT, categories } from "~/constants";
 import { canShowAds, fetchEvents } from "~/utils";
 import { useEventsContext } from "~/context/events-context";
 import { useGeolocation } from "~/hooks/useGeolocation";
@@ -166,7 +166,15 @@ export default component$(() => {
                   }}
                 />
 
-                {canShowAds(index) && <Adsense key={`adsense-${index}`} />}
+                {canShowAds(index) && (
+                  <Adsense type="horizontal-feed-ad" key={`adsense-${index}`}>
+                    <div class="grid place-items-center rounded-2xl border bg-gray-50 p-20 shadow-lg ">
+                      <p class="text-2xl font-bold uppercase">
+                        Ad Space {(index + 1) / AD_STEP}
+                      </p>
+                    </div>
+                  </Adsense>
+                )}
               </>
             ))}
           </div>
