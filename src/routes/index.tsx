@@ -12,6 +12,8 @@ import { useFilter } from "~/hooks/useFilter";
 import HeaderAD from "~/media/banners/ads_header.png?jsx";
 import HeaderADMobile from "~/media/banners/banner_mobile.png?jsx";
 
+import Logo from "~/media/logo.png?jsx";
+
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -105,7 +107,10 @@ export default component$(() => {
 
   return (
     <div class="mx-auto grid grid-cols-1 gap-10 lg:h-screen lg:grid-cols-[16%,1fr,16%] lg:overflow-hidden lg:px-5 xl:max-w-[1340px] 2xl:px-0">
-      <aside class="hidden space-y-5 lg:block">
+      <aside class="hidden space-y-5 pt-2 lg:block">
+        <div>
+          <Logo class="mx-auto h-7 w-auto" alt="VAMOO" />
+        </div>
         <div>
           <p class="mb-2 text-2xl font-bold">Categorias</p>
           <div>
