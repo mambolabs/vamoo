@@ -22,7 +22,7 @@ import {
   startOfWeek,
   startOfMonth,
 } from "date-fns";
-import { pt } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";
 const colStartClasses = [
   "",
   "col-start-2",
@@ -117,7 +117,7 @@ export default component$<CalendarProps>(({ handleChange, initialDay }) => {
         </button>
 
         <p class="capitalize">
-          {format(firstDayCurrentMonth.value, "MMMM yyyy", { locale: pt })}
+          {format(firstDayCurrentMonth.value, "MMMM yyyy", { locale: ptBR })}
         </p>
 
         <button

@@ -17,7 +17,7 @@ import {
   formatRelative,
   startOfToday,
 } from "date-fns";
-import { pt } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";
 import RelevanceSortModal from "../modals/RelevanceSortModal";
 import type { RelevanceFilterItem } from "~/types";
 import { useEventsContext } from "~/context/events-context";
@@ -162,15 +162,15 @@ export default component$(() => {
 
   const displayDate = useComputed$(() => {
     let [rel] = formatRelative(evCtx.filterMaxDate, today, {
-      locale: pt,
+      locale: ptBR,
     }).split(" ");
 
     if (differenceInDays(evCtx.filterMaxDate, today) > 6) {
-      rel = format(evCtx.filterMaxDate, "eeee", { locale: pt });
+      rel = format(evCtx.filterMaxDate, "eeee", { locale: ptBR });
     }
 
     const dateStr = format(evCtx.filterMaxDate, "dd MMM", {
-      locale: pt,
+      locale: ptBR,
     });
 
     return `${rel}, ${dateStr}`;
