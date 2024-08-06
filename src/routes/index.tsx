@@ -8,6 +8,12 @@ import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
 import EventModal from "~/components/modals/EventModal";
 import Filter from "~/components/filter";
 import { useFilter } from "~/hooks/useFilter";
+
+// ADS BANNERS
+// RIGHT
+import AdRightBanner1 from "~/media/banners/ads_banner_right_long.png?jsx";
+import AdRightBanner2 from "~/media/banners/ads_banner_right.png?jsx";
+
 // HEADER
 import HeaderAD from "~/media/banners/ads_header.png?jsx";
 import HeaderADMobile from "~/media/banners/banner_mobile.png?jsx";
@@ -134,11 +140,12 @@ export default component$(() => {
         </div>
       </aside>
       <main class="md:h-full md:overflow-hidden  ">
-        <div>
-          <HeaderAD class="hidden lg:block" />
-          <HeaderADMobile class="lg:hidden" />
-        </div>
-        {/* <Adsense type="text-only-ad" class="max-h-[100px]" /> */}
+        <Adsense type="text-only-ad" class="h-full max-h-[130px] w-auto">
+          <div>
+            <HeaderAD class="hidden lg:block" />
+            <HeaderADMobile class="lg:hidden" />
+          </div>
+        </Adsense>
         <Filter />
 
         <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
@@ -184,10 +191,14 @@ export default component$(() => {
           />
         )}
       </main>
-      <aside class="space-y-5 pt-2">
-        <Adsense type="vertical-ad" class="max-h-[40vh]" />
-
-        <Adsense type="vertical-ad" class="max-h-[40vh]" />
+      <aside class="grid grid-rows-2 gap-5 overflow-y-auto  [scrollbar-width:none] lg:pt-2">
+        {[AdRightBanner1, AdRightBanner2].map((Banner, index) => (
+          <div class="w-[200px] overflow-hidden rounded-2xl" key={index}>
+            <Adsense type="vertical-ad" class="h-full w-full">
+              <Banner />
+            </Adsense>
+          </div>
+        ))}
       </aside>
     </div>
   );
