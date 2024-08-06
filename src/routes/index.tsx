@@ -8,6 +8,9 @@ import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
 import EventModal from "~/components/modals/EventModal";
 import Filter from "~/components/filter";
 import { useFilter } from "~/hooks/useFilter";
+// HEADER
+import HeaderAD from "~/media/banners/ads_header.png?jsx";
+import HeaderADMobile from "~/media/banners/banner_mobile.png?jsx";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -126,8 +129,11 @@ export default component$(() => {
         </div>
       </aside>
       <main class="md:h-full md:overflow-hidden  ">
-        <Adsense type="text-only-ad" class="max-h-[100px]" />
-
+        <div id="header-ads">
+          <HeaderAD class="hidden lg:block" />
+          <HeaderADMobile class="lg:hidden" />
+        </div>
+        {/* <Adsense type="text-only-ad" class="max-h-[100px]" /> */}
         <Filter />
 
         <div class="pb-20 [scrollbar-width:none] md:h-full md:overflow-y-auto md:px-3">
