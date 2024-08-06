@@ -101,7 +101,7 @@ export default component$(() => {
   });
 
   return (
-    <div class="mx-auto grid grid-cols-1 gap-10 overflow-hidden md:h-screen lg:grid-cols-[16%,1fr,16%] lg:px-5 xl:max-w-[1340px] 2xl:px-0">
+    <div class="mx-auto grid grid-cols-1 gap-10 lg:h-screen lg:grid-cols-[16%,1fr,16%] lg:overflow-hidden lg:px-5 xl:max-w-[1340px] 2xl:px-0">
       <aside class="hidden space-y-5 lg:block">
         <div>
           <p class="mb-2 text-2xl font-bold">Categorias</p>
