@@ -134,7 +134,7 @@ export default component$(() => {
         </div>
       </aside>
       <main class="md:h-full md:overflow-hidden  ">
-        <div id="header-ads">
+        <div>
           <HeaderAD class="hidden lg:block" />
           <HeaderADMobile class="lg:hidden" />
         </div>
