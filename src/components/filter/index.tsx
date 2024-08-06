@@ -28,6 +28,8 @@ import ByLocation from "./ByLocation";
 import TabButton from "./TabButton";
 import ByTagsCategories from "./ByTagsCategories";
 
+import MiniLogo from "~/media/mini_logo_vamoo.png?jsx";
+
 const today = startOfToday();
 
 export function uniqueKeys(items: RelevanceFilterItem[]) {
@@ -324,7 +326,7 @@ export default component$(() => {
           ))}
         </div>
         <div class="flex items-center justify-between bg-black max-lg:p-2.5 lg:bg-white">
-          <div class="flex items-center lg:hidden">
+          <div class="flex items-center gap-2 lg:hidden">
             <button type="button" class="text-white">
               <svg
                 class="h-auto w-8"
@@ -337,6 +339,8 @@ export default component$(() => {
                 />
               </svg>
             </button>
+
+            <MiniLogo class="h-4 w-auto" />
           </div>
           <div class="flex items-center gap-5">
             <button
