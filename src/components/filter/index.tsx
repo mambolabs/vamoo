@@ -255,7 +255,7 @@ export default component$(() => {
               showFilterModal.value = true;
             }}
             type="button"
-            class="flex items-center gap-1 rounded-full border border-[#0c9d0c] px-4 py-1 text-sm font-semibold text-[#5b5b5b]"
+            class="flex items-center gap-1 rounded-full border border-[#0c9d0c] px-4 py-1 text-sm font-semibold capitalize text-[#5b5b5b]"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
