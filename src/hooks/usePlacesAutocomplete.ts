@@ -53,20 +53,23 @@ export function usePlacesAutocomplete({
 
       const geocoder = new Geocoder();
 
-      geocoder.geocode({ placeId: place.place_id }, (results, status) => {
-        if (status === "OK" && results?.length) {
-          showSuggestions.value = false;
-          searchLocation.value = "";
+      geocoder.geocode(
+        { placeId: place.place_id, language: "pt-BR" },
+        (results, status) => {
+          if (status === "OK" && results?.length) {
+            showSuggestions.value = false;
+            searchLocation.value = "";
 
-          const { formatted_address, geometry } = results[0];
+            const { formatted_address, geometry } = results[0];
 
-          evCtx.locationName = formatted_address;
-          evCtx.coord = {
-            latitude: geometry.location.lat(),
-            longitude: geometry.location.lng(),
-          };
-        }
-      });
+            evCtx.locationName = formatted_address;
+            evCtx.coord = {
+              latitude: geometry.location.lat(),
+              longitude: geometry.location.lng(),
+            };
+          }
+        },
+      );
     },
   );
 
