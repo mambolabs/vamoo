@@ -13,6 +13,7 @@ type ByLocationProps = {
   localLocationName: Signal<string>;
   localFilterDistance: Signal<number>;
 };
+
 export default component$<ByLocationProps>(
   ({
     canSearchLocation,
@@ -69,50 +70,72 @@ export default component$<ByLocationProps>(
             </div>
           )}
           {showSuggestions.value && (
-            <ul class="border border-[#858585] bg-white">
+            <ul class="overflow-hidden rounded-2xl bg-white shadow-lg">
               {suggestions.value.map((suggestion) => (
                 <li
                   key={suggestion.place_id}
                   role="option"
-                  class="cursor-pointer border-t border-[#858585] px-2 py-1 text-sm first:border-none hover:bg-[#fafafa]"
+                  class="relative flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm after:absolute after:bottom-0 after:left-2 after:h-[.5px] after:w-[calc(100%-1rem)] after:-translate-y-1/2 after:bg-[#e0e0e0] after:content-[''] first:border-none last:after:content-none hover:bg-[#fafafa] "
                   onClick$={$(() => {
                     handlePlaceSelect$(suggestion);
                   })}
                 >
-                  <strong>{suggestion.structured_formatting.main_text}</strong>{" "}
-                  <span>{suggestion.structured_formatting.secondary_text}</span>
+                  <div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-auto w-6 text-[#e0e0e0]"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M12 11.5A2.5 2.5 0 0 1 9.5 9A2.5 2.5 0 0 1 12 6.5A2.5 2.5 0 0 1 14.5 9a2.5 2.5 0 0 1-2.5 2.5M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm text-[#ff7b0d]">
+                      <strong>
+                        {suggestion.structured_formatting.main_text}
+                      </strong>
+                    </p>
+                    <span class="text-sm text-[#a0a0a0]">
+                      {suggestion.structured_formatting.secondary_text}
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
-          <div class="flex flex-wrap gap-2">
-            {localLocationName.value && (
-              <div class="flex items-center gap-1.5 rounded-full border border-[#858585] px-3 py-1">
-                <span class="text-sm font-medium">
-                  {localLocationName.value}
-                </span>
-                <button
-                  type="button"
-                  onClick$={$(() => (localLocationName.value = ""))}
-                >
-                  <svg
-                    class="h-auto w-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 32 32"
+          {!showSuggestions.value && (
+            <div class="flex flex-wrap gap-2">
+              {localLocationName.value && (
+                <div class="flex items-center gap-1.5 rounded-full border border-[#858585] px-3 py-1">
+                  <span class="text-sm font-medium">
+                    {localLocationName.value}
+                  </span>
+                  <button
+                    type="button"
+                    onClick$={$(() => (localLocationName.value = ""))}
                   >
-                    <path
-                      fill="currentColor"
-                      d="M16 2C8.2 2 2 8.2 2 16s6.2 14 14 14s14-6.2 14-14S23.8 2 16 2m0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12s-5.4 12-12 12"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M21.4 23L16 17.6L10.6 23L9 21.4l5.4-5.4L9 10.6L10.6 9l5.4 5.4L21.4 9l1.6 1.6l-5.4 5.4l5.4 5.4z"
-                    />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
+                    <svg
+                      class="h-auto w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 32 32"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M16 2C8.2 2 2 8.2 2 16s6.2 14 14 14s14-6.2 14-14S23.8 2 16 2m0 26C9.4 28 4 22.6 4 16S9.4 4 16 4s12 5.4 12 12s-5.4 12-12 12"
+                      />
+                      <path
+                        fill="currentColor"
+                        d="M21.4 23L16 17.6L10.6 23L9 21.4l5.4-5.4L9 10.6L10.6 9l5.4 5.4L21.4 9l1.6 1.6l-5.4 5.4l5.4 5.4z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div class="space-y-2">
           <p class="text-xl font-bold">Distancia</p>
