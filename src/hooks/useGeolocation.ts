@@ -1,59 +1,46 @@
 /* eslint-disable no-fallthrough */
 import { $, useVisibleTask$ } from "@builder.io/qwik";
-import { server$ } from "@builder.io/qwik-city";
 import { useEventsContext } from "~/context/events-context";
 import { useGooeleMaps } from "~/context/google-maps-context";
+
+const LOCATION_STORE_KEY = "uloc";
 
 export type Loc = {
   latitude: number;
   longitude: number;
 };
 
-type GeoLocationResponse = {
-  status: "success";
-  country: string;
-  countryCode: string;
-  region: string;
-  regionName: string;
+type IPRegResult = {
   city: string;
-  zip: string;
-  lat: number;
-  lon: number;
-  timezone: string;
-  isp: string;
-  org: string;
-  as: string;
-  query: string;
+  region: {
+    code: string;
+    name: string;
+  };
+  longitude: number;
+  latitude: number;
 };
-
-const getLocationForIp = server$(async (ip: string) => {
-  /***
-   *  no https
-   */
-  const res = await fetch(`http://ip-api.com/json/${ip}`);
-
-  if (!res.ok) {
-    return null;
-  }
-
-  const data = (await res.json()) as GeoLocationResponse;
-
-  return data;
-});
 
 async function lookupLocation() {
   try {
-    const trace = await fetch("https://1.0.0.1/cdn-cgi/trace").then((res) =>
-      res.text(),
-    );
+    const loc = localStorage.getItem(LOCATION_STORE_KEY);
 
-    const [item] = trace.split("\n").filter((item) => item.startsWith("ip="));
+    if (!loc) {
+      const result = await fetch("https://api.ipregistry.co?key=tryout");
 
-    const ip = item.replace("ip=", "");
+      if (!result.ok) return null;
 
-    const res = await getLocationForIp(ip);
+      const data = await result.json();
 
-    return res;
+      localStorage.setItem(LOCATION_STORE_KEY, JSON.stringify(data.location));
+
+      return data.location as IPRegResult;
+    }
+
+    try {
+      return JSON.parse(loc) as IPRegResult;
+    } catch (err) {
+      return null;
+    }
   } catch (err) {
     console.log(err);
 
@@ -81,6 +68,8 @@ export function useGeolocation() {
         if (status === "OK" && results?.length) {
           const { formatted_address, geometry } = results[0];
 
+          // console.log({ rest });
+
           evCtx.locationName = formatted_address;
           evCtx.coord = {
             latitude: geometry.location.lat(),
@@ -99,11 +88,11 @@ export function useGeolocation() {
     }
 
     evCtx.coord = {
-      latitude: res.lat,
-      longitude: res.lon,
+      latitude: res.latitude,
+      longitude: res.longitude,
     };
 
-    await setLocationName$();
+    evCtx.locationName = `${res.city}, ${res.region.name}`;
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
