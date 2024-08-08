@@ -260,6 +260,17 @@ export default component$(() => {
     },
   );
 
+  useTask$(() => {
+    if (isServer) return;
+
+    /**
+     * Set priority order
+     */
+    evCtx.priorityOrder = relevanceFilterOptions.value.map((item) => {
+      return item.order;
+    });
+  });
+
   return (
     <>
       <div class="flex flex-col-reverse justify-center gap-1 rounded-2xl shadow-md lg:flex-row lg:items-center lg:justify-between lg:gap-5 lg:border lg:px-3 lg:py-3">
