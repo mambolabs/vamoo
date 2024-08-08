@@ -64,15 +64,38 @@ export default component$(() => {
         ></meta>
         <link rel="manifest" href="/manifest.json" />
         <RouterHead />
-        {process.env.NODE_ENV === "production" && (
+        {/* {process.env.NODE_ENV === "production" && (
           <script
             async
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${GOOGLE_ADSENSE_PUBLISHER_ID}`}
             crossOrigin="anonymous"
           ></script>
-        )}
+        )} */}
       </head>
       <body lang="en">
+        <ins
+          class="adsbygoogle"
+          style="display:inline-block;width:320px;height:80px"
+          data-ad-client="ca-pub-4080248392226363"
+          data-ad-slot="2715039466"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+
+        <ins
+          class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-4080248392226363"
+          data-ad-slot="2715039466"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+        <script dangerouslySetInnerHTML="  (adsbygoogle = window.adsbygoogle || []).push({});"></script>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4080248392226363"
+          crossOrigin="anonymous"
+        ></script>
         <RouterOutlet />
         <ServiceWorkerRegister />
       </body>
