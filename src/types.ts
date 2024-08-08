@@ -48,4 +48,5 @@ export type RelevanceFilterItem = {
   title: string;
   key: "recent" | "nearest" | "preferencias";
   isActive: boolean;
+  order: "nice" | "time" | "distance";
 };
