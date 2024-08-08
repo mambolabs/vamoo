@@ -37,6 +37,10 @@ export function useFilter() {
     url.searchParams.set("distance", `${evCtx.distance}km`);
 
     if (evCtx.events.length && !fresh) {
+      /**
+       *  search_after allows us to load more events after the last one
+       */
+
       const lastEvent = evCtx.events[evCtx.events.length - 1];
 
       for (const value of lastEvent._esMeta.sort) {
@@ -44,7 +48,14 @@ export function useFilter() {
       }
     }
 
-    if (evCtx.priorityOrder.length) {
+    if (
+      evCtx.priorityOrder.length &&
+      evCtx.filterCategories.length &&
+      evCtx.filterTags.length
+    ) {
+      /**
+       *  priorityOrder will be considered only if we have categories and tags
+       */
       for (const value of evCtx.priorityOrder) {
         url.searchParams.append("priorityOrder[]", value);
       }
