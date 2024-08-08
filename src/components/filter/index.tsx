@@ -81,7 +81,7 @@ export default component$(() => {
     fetchSuggestions$,
     searchLocation,
     suggestions,
-    loading,
+    isLoading,
     handlePlaceSelect$,
     showSuggestions,
   } = usePlacesAutocomplete();
@@ -90,7 +90,7 @@ export default component$(() => {
     return evCtx.filterCategories.length > 0 || evCtx.filterTags.length > 0;
   });
 
-  const canSearchLocation = useSignal(!loading);
+  const canSearchLocation = useSignal(!isLoading.value);
 
   const relevanceFilterOptions = useSignal<RelevanceFilterItem[]>(() =>
     uniqueKeys([
@@ -577,7 +577,7 @@ export default component$(() => {
                   <ByLocation
                     showSuggestions={showSuggestions}
                     searchLocation={searchLocation}
-                    loading={loading}
+                    isLoading={isLoading}
                     suggestions={suggestions}
                     localFilterDistance={localFilterDistance}
                     localLocationName={localLocationName}

@@ -125,7 +125,7 @@ export function usePlacesAutocomplete({
   return {
     searchLocation,
     suggestions,
-    loading: isLoading.value,
+    isLoading,
     fetchSuggestions$,
     handlePlaceSelect$,
     showSuggestions,

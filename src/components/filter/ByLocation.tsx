@@ -4,7 +4,7 @@ type ByLocationProps = {
   canSearchLocation: Signal<boolean>;
   searchLocation: Signal<string>;
   handleSearch$: QRL<() => void>;
-  loading: boolean;
+  isLoading: Signal<boolean>;
   suggestions: Signal<google.maps.places.AutocompletePrediction[]>;
   showSuggestions: Signal<boolean>;
   handlePlaceSelect$: QRL<
@@ -19,7 +19,7 @@ export default component$<ByLocationProps>(
     canSearchLocation,
     searchLocation,
     handleSearch$,
-    loading,
+    isLoading,
     suggestions,
     showSuggestions,
     handlePlaceSelect$,
@@ -64,7 +64,7 @@ export default component$<ByLocationProps>(
             />
           </div>
 
-          {loading && (
+          {isLoading.value && (
             <div class="h-1 w-full overflow-hidden rounded-sm bg-[#ff7b0d]/10">
               <div class="h-full w-full origin-left-right animate-loading-progress bg-[#ff7b0d]"></div>
             </div>
