@@ -88,11 +88,22 @@ export default component$(() => {
 
   const relevanceFilterOptions = useSignal<RelevanceFilterItem[]>(() =>
     uniqueKeys([
-      { title: "Eventos mais recentes", key: "recent", isActive: true },
-      { title: "Eventos mais proximos", key: "nearest", isActive: true },
+      {
+        title: "Eventos mais recentes",
+        key: "recent",
+        order: "time",
+        isActive: true,
+      },
+      {
+        title: "Eventos mais proximos",
+        key: "nearest",
+        order: "distance",
+        isActive: true,
+      },
       {
         title: "Minhas preferencias",
         key: "preferencias",
+        order: "nice",
         isActive: hasFilters.value,
       },
     ]),
@@ -157,7 +168,7 @@ export default component$(() => {
         break;
     }
 
-    evCtx.events = await loadEvents();
+    evCtx.events = await loadEvents({ fresh: true });
 
     showFilterModal.value = false;
   });
@@ -178,10 +189,14 @@ export default component$(() => {
     return `${rel}, ${dateStr}`;
   });
 
-  const filterByRelevance$ = $(() => {
+  const filterByRelevance$ = $(async () => {
     showRelevanceFilterModal.value = false;
 
-    /** TODO: */
+    evCtx.priorityOrder = relevanceFilterOptions.value.map((item) => {
+      return item.order;
+    });
+
+    evCtx.events = await loadEvents({ fresh: true });
   });
 
   useTask$(({ track }) => {
