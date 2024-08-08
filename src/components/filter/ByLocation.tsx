@@ -1,5 +1,6 @@
 import { $, component$, type QRL, type Signal } from "@builder.io/qwik";
 import RangeInput from "../range-input/RangeInput";
+import { useDebouncer$ } from "~/hooks/useDebounce";
 type ByLocationProps = {
   canSearchLocation: Signal<boolean>;
   searchLocation: Signal<string>;
@@ -26,6 +27,10 @@ export default component$<ByLocationProps>(
     localLocationName,
     localFilterDistance,
   }) => {
+    const debouncedSearch = useDebouncer$(() => {
+      handleSearch$();
+    }, 500);
+
     return (
       <div class="h-full  space-y-6 px-5 py-6">
         <div class="space-y-2">
@@ -55,9 +60,19 @@ export default component$<ByLocationProps>(
               class="w-full rounded-lg border-2 border-[#9e9e9e] p-2 pl-8 caret-[#ff7b0d] focus:text-[#9e9e9e]  focus:outline-[#ff7b0d]"
               name="location"
               disabled={!canSearchLocation.value}
-              onKeyDown$={$((e) => {
+              onKeyDown$={$((e, el) => {
                 if (e.key === "Enter") {
                   handleSearch$();
+                }
+
+                if (el.value.length > 3) {
+                  debouncedSearch();
+
+                  return;
+                }
+
+                if (el.value.length === 0) {
+                  showSuggestions.value = false;
                 }
               })}
               bind:value={searchLocation}
