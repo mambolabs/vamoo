@@ -4,6 +4,7 @@ import {
   $,
   useTask$,
   useComputed$,
+  useOnWindow,
 } from "@builder.io/qwik";
 
 import Swiper from "swiper";
@@ -31,6 +32,11 @@ import ByTagsCategories from "./ByTagsCategories";
 import MiniLogo from "~/media/mini_logo_vamoo.png?jsx";
 
 const today = startOfToday();
+
+/**
+ *  This (in pixels) is used to determine when to show/hide the tags and categories filter
+ */
+const SCROLL_THRESHOLD = 250;
 
 export function uniqueKeys(items: RelevanceFilterItem[]) {
   const seenKeys = new Set<string>();
@@ -108,6 +114,8 @@ export default component$(() => {
       },
     ]),
   );
+
+  const hideFilters = useSignal(false);
 
   const handleClose$ = $(() => {
     localFilterCategories.value = evCtx.filterCategories;
@@ -199,6 +207,10 @@ export default component$(() => {
     evCtx.events = await loadEvents({ fresh: true });
   });
 
+  const filtersCount = useComputed$(() => {
+    return evCtx.filterCategories.length + evCtx.filterTags.length;
+  });
+
   useTask$(({ track }) => {
     const localSearch = track(() => localLocationName.value);
 
@@ -271,6 +283,26 @@ export default component$(() => {
     });
   });
 
+  useOnWindow(
+    "scroll",
+    $((ev) => {
+      /**
+       *  1024(px) is used beacause the home page has a fixed height from this width
+       */
+      if (window.innerWidth > 1024) {
+        const target = ev.target as HTMLElement;
+
+        if (target.scrollTop > SCROLL_THRESHOLD) {
+          hideFilters.value = true;
+        }
+
+        return;
+      }
+
+      //  mobile
+    }),
+  );
+
   return (
     <>
       <div class="flex flex-col-reverse justify-center gap-1 rounded-2xl shadow-md lg:flex-row lg:items-center lg:justify-between lg:gap-5 lg:border lg:px-3 lg:py-3">
@@ -322,34 +354,48 @@ export default component$(() => {
             </button>
           )}
 
-          {evCtx.filterCategories.map((category, index) => (
-            <button
-              key={category + index}
-              onClick$={() => {
-                filterView.value = "tags";
-                showFilterModal.value = true;
-              }}
-              type="button"
-              class="rounded-full border bg-black px-4 py-1 text-sm font-semibold text-white"
-            >
-              {category}
-            </button>
-          ))}
+          {filtersCount.value > 2 && hideFilters.value ? (
+            <div>
+              <button
+                type="button"
+                class="rounded-full border border-black px-4 py-1 text-sm font-semibold"
+                onClick$={() => (hideFilters.value = false)}
+              >
+                +{filtersCount.value} Filtros
+              </button>
+            </div>
+          ) : (
+            <>
+              {evCtx.filterCategories.map((category, index) => (
+                <button
+                  key={category + index}
+                  onClick$={() => {
+                    filterView.value = "tags";
+                    showFilterModal.value = true;
+                  }}
+                  type="button"
+                  class="rounded-full border bg-black px-4 py-1 text-sm font-semibold text-white"
+                >
+                  {category}
+                </button>
+              ))}
 
-          {evCtx.filterTags.map((tag, index) => (
-            <button
-              key={tag + index}
-              onClick$={() => {
-                filterView.value = "tags";
-                showFilterModal.value = true;
-              }}
-              type="button"
-              class="rounded-full border border-[#858585] px-3 py-1 text-sm font-bold"
-            >
-              <strong>#</strong>
-              {tag}
-            </button>
-          ))}
+              {evCtx.filterTags.map((tag, index) => (
+                <button
+                  key={tag + index}
+                  onClick$={() => {
+                    filterView.value = "tags";
+                    showFilterModal.value = true;
+                  }}
+                  type="button"
+                  class="rounded-full border border-[#858585] px-3 py-1 text-sm font-bold"
+                >
+                  <strong>#</strong>
+                  {tag}
+                </button>
+              ))}
+            </>
+          )}
         </div>
         <div class="flex items-center justify-between bg-black max-lg:p-2.5 lg:bg-white">
           <div class="flex items-center gap-2 lg:hidden">
