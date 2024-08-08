@@ -21,6 +21,88 @@ type PlacesAutocompleteOptions = {
    */
   cacheKey?: string;
 };
+
+const POSTAL_CODE_TYPE = "postal_code";
+
+const POSTAL_TOWN_TYPE = "postal_town";
+
+const ROUTE_TYPE = "route";
+
+const LOCALITY_TYPE = "locality";
+
+const ADMIN_AREA_1_TYPE = "administrative_area_level_1";
+
+const ADMIN_AREA_2_TYPE = "administrative_area_level_2";
+
+const COUNTRY_TYPE = "country";
+
+const NAME_COMPONENTS = [
+  POSTAL_CODE_TYPE,
+  POSTAL_TOWN_TYPE,
+  ROUTE_TYPE,
+  LOCALITY_TYPE,
+  ADMIN_AREA_1_TYPE,
+  ADMIN_AREA_2_TYPE,
+  COUNTRY_TYPE,
+];
+
+/**
+ *  Ideal location name for given addresses
+ */
+function getLocationName(
+  address_components: google.maps.GeocoderAddressComponent[],
+) {
+  if (address_components.length === 0) return null;
+
+  const postal_code = address_components.find((c) =>
+    c.types.includes(POSTAL_CODE_TYPE),
+  );
+
+  const postal_town = address_components.find((c) =>
+    c.types.includes(POSTAL_TOWN_TYPE),
+  );
+
+  const route = address_components.find((c) => c.types.includes(ROUTE_TYPE));
+
+  const locality = address_components.find((c) =>
+    c.types.includes(LOCALITY_TYPE),
+  );
+
+  const admin_area_level_1 = address_components.find((c) =>
+    c.types.includes(ADMIN_AREA_1_TYPE),
+  );
+
+  const admin_area_level_2 = address_components.find((c) =>
+    c.types.includes(ADMIN_AREA_2_TYPE),
+  );
+
+  const country = address_components.find((c) =>
+    c.types.includes(COUNTRY_TYPE),
+  );
+
+  let first: string;
+
+  const second = admin_area_level_1
+    ? admin_area_level_1.long_name
+    : country?.long_name;
+
+  if (admin_area_level_2) {
+    first = admin_area_level_2.long_name;
+  } else if (locality) {
+    first = locality.long_name;
+  } else if (route) {
+    first = route.long_name;
+  } else if (postal_town) {
+    first = postal_code
+      ? `${postal_town.long_name} ${postal_code.long_name}`
+      : postal_town.long_name;
+  } else {
+    return null;
+  }
+
+  return `${first}, ${second}`;
+}
+
 export function usePlacesAutocomplete({
   debounce = 200,
   cacheDuration = 24 * 60 * 60,
@@ -60,9 +142,18 @@ export function usePlacesAutocomplete({
             showSuggestions.value = false;
             searchLocation.value = "";
 
-            const { formatted_address, geometry } = results[0];
+            const { formatted_address, geometry, address_components } =
+              results[0];
 
-            evCtx.locationName = formatted_address;
+            const _name = getLocationName(
+              address_components.filter((comp) =>
+                NAME_COMPONENTS.some((c) => comp.types.includes(c)),
+              ),
+            );
+
+            console.log({ _name, address_components });
+
+            evCtx.locationName = _name || formatted_address;
             evCtx.coord = {
               latitude: geometry.location.lat(),
               longitude: geometry.location.lng(),
