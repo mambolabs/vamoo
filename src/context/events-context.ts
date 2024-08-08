@@ -1,5 +1,5 @@
 import { createContextId, useContext } from "@builder.io/qwik";
-import type { TEvent } from "~/types";
+import type { RelevanceFilterItem, TEvent } from "~/types";
 
 export type TEventsContext = {
   events: TEvent[];
@@ -12,6 +12,7 @@ export type TEventsContext = {
   };
   locationName: string;
   distance: number;
+  priorityOrder: RelevanceFilterItem["order"][];
 };
 
 export const EventsContext = createContextId<TEventsContext>("EventsSTore");

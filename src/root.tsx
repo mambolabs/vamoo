@@ -35,6 +35,7 @@ export default component$(() => {
     },
     locationName: "",
     distance: 1,
+    priorityOrder: [],
   });
 
   useContextProvider(MapsContext, mapStore);
