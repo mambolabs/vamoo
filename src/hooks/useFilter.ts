@@ -16,16 +16,16 @@ export function useFilter() {
       evCtx.coord.longitude.toString() + "," + evCtx.coord.latitude.toString(),
     );
 
-    if (evCtx.filterCategories.length > 0) {
-      evCtx.filterTags.forEach((cat) => {
-        url.searchParams.append("categories", cat);
-      });
+    if (evCtx.filterCategories.length) {
+      for (const cat of evCtx.filterCategories) {
+        url.searchParams.append("categories[]", cat);
+      }
     }
 
-    if (evCtx.filterTags.length > 0) {
-      evCtx.filterTags.forEach((tag) => {
-        url.searchParams.append("tags", tag);
-      });
+    if (evCtx.filterTags.length) {
+      for (const tag of evCtx.filterTags) {
+        url.searchParams.append("tags[]", tag);
+      }
     }
 
     url.searchParams.set("distance", `${evCtx.distance}km`);
