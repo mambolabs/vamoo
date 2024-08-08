@@ -3,10 +3,16 @@ import { fetchEvents } from "~/utils";
 import { EVENTS_ENDPOINT } from "~/constants";
 import { useEventsContext } from "~/context/events-context";
 
+type LoadEventsOptions = {
+  /**
+   *  If true, the events will be loaded from the server without search_after parameter
+   */
+  fresh?: boolean;
+};
 export function useFilter() {
   const evCtx = useEventsContext();
 
-  const loadEvents = $(async () => {
+  const loadEvents = $(async ({ fresh = false }: LoadEventsOptions = {}) => {
     const url = new URL(EVENTS_ENDPOINT);
 
     url.searchParams.set("toDate", evCtx.filterMaxDate.toISOString());
@@ -30,7 +36,7 @@ export function useFilter() {
 
     url.searchParams.set("distance", `${evCtx.distance}km`);
 
-    if (evCtx.events.length) {
+    if (evCtx.events.length && !fresh) {
       const lastEvent = evCtx.events[evCtx.events.length - 1];
 
       for (const value of lastEvent._esMeta.sort) {
