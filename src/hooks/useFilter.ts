@@ -38,6 +38,12 @@ export function useFilter() {
       }
     }
 
+    if (evCtx.priorityOrder.length) {
+      for (const value of evCtx.priorityOrder) {
+        url.searchParams.append("priorityOrder[]", value);
+      }
+    }
+
     return fetchEvents(url);
   });
 
