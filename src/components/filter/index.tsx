@@ -247,7 +247,7 @@ export default component$(() => {
 
   return (
     <>
-      <div class="flex flex-col-reverse justify-center gap-1 rounded-2xl lg:flex-row lg:items-center lg:justify-between lg:gap-5 lg:border lg:px-3 lg:py-3">
+      <div class="flex flex-col-reverse justify-center gap-1 rounded-2xl shadow-md lg:flex-row lg:items-center lg:justify-between lg:gap-5 lg:border lg:px-3 lg:py-3">
         <div class="flex flex-wrap gap-2 max-lg:p-2.5">
           <button
             onClick$={() => {
