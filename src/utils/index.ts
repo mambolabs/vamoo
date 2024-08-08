@@ -2,11 +2,21 @@ import { AD_STEP } from "~/constants";
 import type { TEvent } from "~/types";
 
 export async function fetchEvents(url: URL) {
-  const response = await fetch(url);
+  try {
+    const response = await fetch(url);
 
-  const data = await response.json();
+    if (!response.ok) {
+      return [] as TEvent[];
+    }
 
-  return data.details.results as TEvent[];
+    const data = await response.json();
+
+    return data.details.results as TEvent[];
+  } catch (err) {
+    console.log(err);
+
+    return [] as TEvent[];
+  }
 }
 
 export function canShowAds(index: number) {
