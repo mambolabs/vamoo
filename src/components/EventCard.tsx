@@ -41,7 +41,7 @@ export default component$<EventCardProps>(({ event, handleClick$ }) => {
   });
 
   return (
-    <div class="rounded-2xl border shadow-lg" onClick$={handleClick$}>
+    <div class="rounded-2xl  border shadow-lg" onClick$={handleClick$}>
       <div class="flex items-center gap-2 p-5">
         <div class="rounded-full bg-[#e0e0e0] p-2">
           <Avatar class="size-8" />
@@ -52,7 +52,7 @@ export default component$<EventCardProps>(({ event, handleClick$ }) => {
           <p class="font-light text-[#444444]">{event.instagramUsername}</p>
         </div>
       </div>
-      <div class="relative rounded-2xl bg-black">
+      <div class="relative rounded-2xl rounded-tr-none bg-black">
         <div class="absolute left-5 top-5 flex items-center gap-3">
           <span class="rounded-full bg-[#0c9d0c] px-2.5 py-1 text-sm font-semibold capitalize text-white">
             {viaDate(event.startsOn)}
@@ -61,6 +61,13 @@ export default component$<EventCardProps>(({ event, handleClick$ }) => {
             {event.placeName}
             {distanceKm.value && `, ${distanceKm.value} km`}
           </span>
+        </div>
+
+        <div class="absolute right-0 top-0 w-max -translate-y-full rounded-t-2xl bg-black px-3 pb-1 pt-1.5 text-xs">
+          <span class="font-semibold text-white">
+            <span class="text-sm">{event.score}</span>%{" "}
+          </span>
+          <span class="text-[#9d9fa6]">Relevante</span>
         </div>
         <img
           class="mx-auto w-3/4 "

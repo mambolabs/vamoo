@@ -43,7 +43,6 @@ export const useEvents = routeLoader$(async () => {
 
 const sidebarLinks: { name: string; href: string }[] = [
   { name: "Terms of Service", href: "#terms-of-service" },
-
   { name: "Privacy Policy", href: "#privacy-policy" },
 ];
 
