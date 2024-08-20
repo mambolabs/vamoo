@@ -54,30 +54,39 @@ export function useGeolocation() {
   const maps = useGooeleMaps();
 
   const setLocationName$ = $(async () => {
-
     function extractNames(places: google.maps.GeocoderResult) {
-      let streetNumber = '';
+      let streetNumber = "";
+      let route = "";
+      let countryCode = "";
+      let firstLongName = "";
+      let firstShortName = "";
 
-      let route = '';
+      const components = Array.isArray(places)
+        ? places
+        : places.address_components;
 
-      let countryCode = '';
-  
-      places.address_components.forEach((component: { types: string | string[]; long_name: string; short_name: string; }) => {
-          if (component.types.includes('street_number')) {
-              streetNumber = component.long_name;
-          }
-
-          if (component.types.includes('route')) {
-              route = component.long_name;
-          }
-
-          if (component.types.includes('country')) {
-              countryCode = component.short_name;  // use short_name for country code
-          }
+      components.forEach((component) => {
+        if (component.types.includes("street_number")) {
+          streetNumber = component.long_name;
+        }
+        if (component.types.includes("route")) {
+          route = component.long_name;
+        }
+        if (component.types.includes("country")) {
+          countryCode = component.short_name;
+        }
+        if (!firstLongName && !firstShortName) {
+          firstLongName = component.long_name;
+          firstShortName = component.short_name;
+        }
       });
-  
+
+      if (!streetNumber && !route && firstLongName && firstShortName) {
+        return `${firstLongName}, ${firstShortName}`;
+      }
+
       return `${streetNumber} ${route}, ${countryCode}`;
-  }
+    }
     if (!maps.mapsLoader) return;
 
     const { latitude, longitude } = evCtx.coord;
@@ -90,12 +99,9 @@ export function useGeolocation() {
       { location: { lat: latitude, lng: longitude } },
       (results, status) => {
         if (status === "OK" && results?.length) {
-          const {  geometry } = results[0];
+          const { geometry } = results[0];
 
-
-    
-
-          evCtx.locationName = extractNames(results[0])
+          evCtx.locationName = extractNames(results[0]);
           evCtx.coord = {
             latitude: geometry.location.lat(),
             longitude: geometry.location.lng(),

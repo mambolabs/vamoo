@@ -133,30 +133,39 @@ export function usePlacesAutocomplete({
       if (!maps.mapsLoader) return;
       const { Geocoder } = await maps.mapsLoader.importLibrary("geocoding");
 
-
       function extractNames(places: google.maps.GeocoderResult) {
-        let streetNumber = '';
-  
-        let route = '';
-  
-        let countryCode = '';
-    
-        places.address_components.forEach((component: { types: string | string[]; long_name: string; short_name: string; }) => {
-            if (component.types.includes('street_number')) {
-                streetNumber = component.long_name;
-            }
-  
-            if (component.types.includes('route')) {
-                route = component.long_name;
-            }
-  
-            if (component.types.includes('country')) {
-                countryCode = component.short_name;  // use short_name for country code
-            }
+        let streetNumber = "";
+        let route = "";
+        let countryCode = "";
+        let firstLongName = "";
+        let firstShortName = "";
+
+        const components = Array.isArray(places)
+          ? places
+          : places.address_components;
+
+        components.forEach((component) => {
+          if (component.types.includes("street_number")) {
+            streetNumber = component.long_name;
+          }
+          if (component.types.includes("route")) {
+            route = component.long_name;
+          }
+          if (component.types.includes("country")) {
+            countryCode = component.short_name;
+          }
+          if (!firstLongName && !firstShortName) {
+            firstLongName = component.long_name;
+            firstShortName = component.short_name;
+          }
         });
-    
+
+        if (!streetNumber && !route && firstLongName && firstShortName) {
+          return `${firstLongName}, ${firstShortName}`;
+        }
+
         return `${streetNumber} ${route}, ${countryCode}`;
-    }
+      }
 
       const geocoder = new Geocoder();
 
@@ -167,8 +176,7 @@ export function usePlacesAutocomplete({
             showSuggestions.value = false;
             searchLocation.value = "";
 
-            const {  geometry, address_components } =
-              results[0];
+            const { geometry, address_components } = results[0];
 
             const _name = getLocationName(
               address_components.filter((comp) =>
