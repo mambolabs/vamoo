@@ -66,6 +66,8 @@ export default component$(() => {
 
   useTask$(() => {
     evCtx.events = initialEvents.value;
+
+    console.log("Events", evCtx.events.length);
     previewEvent.value = initialEvents.value[0];
   });
 

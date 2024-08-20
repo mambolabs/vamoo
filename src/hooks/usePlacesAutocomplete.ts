@@ -133,6 +133,31 @@ export function usePlacesAutocomplete({
       if (!maps.mapsLoader) return;
       const { Geocoder } = await maps.mapsLoader.importLibrary("geocoding");
 
+
+      function extractNames(places: google.maps.GeocoderResult) {
+        let streetNumber = '';
+  
+        let route = '';
+  
+        let countryCode = '';
+    
+        places.address_components.forEach((component: { types: string | string[]; long_name: string; short_name: string; }) => {
+            if (component.types.includes('street_number')) {
+                streetNumber = component.long_name;
+            }
+  
+            if (component.types.includes('route')) {
+                route = component.long_name;
+            }
+  
+            if (component.types.includes('country')) {
+                countryCode = component.short_name;  // use short_name for country code
+            }
+        });
+    
+        return `${streetNumber} ${route}, ${countryCode}`;
+    }
+
       const geocoder = new Geocoder();
 
       geocoder.geocode(
@@ -142,7 +167,7 @@ export function usePlacesAutocomplete({
             showSuggestions.value = false;
             searchLocation.value = "";
 
-            const { formatted_address, geometry, address_components } =
+            const {  geometry, address_components } =
               results[0];
 
             const _name = getLocationName(
@@ -153,7 +178,7 @@ export function usePlacesAutocomplete({
 
             console.log({ _name, address_components });
 
-            evCtx.locationName = _name || formatted_address;
+            evCtx.locationName = extractNames(results[0]);
             evCtx.coord = {
               latitude: geometry.location.lat(),
               longitude: geometry.location.lng(),
