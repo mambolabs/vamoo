@@ -13,6 +13,45 @@ export function useFilter() {
   const evCtx = useEventsContext();
 
   const loadEvents = $(async ({ fresh = false }: LoadEventsOptions = {}) => {
+    function createEventUrl({
+      baseUrl,
+      toDate,
+      geoLocation,
+      distance,
+      categories,
+    }: any) {
+      const url = new URL(baseUrl);
+      const params = url.searchParams;
+
+      // Add the toDate parameter
+      params.append("toDate", toDate);
+
+      // Add the geoLocation parameter
+      params.append("geoLocation", geoLocation);
+
+      // Add the distance parameter
+      params.append("distance", distance);
+
+      // Add categories (as an array with [])
+      categories.forEach((category) => params.append("categories[]", category));
+
+      return url.toString();
+    }
+
+    // Example usage:
+    const custom = createEventUrl({
+      baseUrl: EVENTS_ENDPOINT,
+      toDate: evCtx.filterMaxDate.toISOString(),
+      geoLocation:
+        evCtx.coord.longitude.toString() +
+        "," +
+        evCtx.coord.latitude.toString(),
+      distance: `${evCtx.distance}km`,
+      categories: evCtx.filterCategories,
+    });
+
+    console.log("TEST URL", custom);
+
     const url = new URL(EVENTS_ENDPOINT);
 
     url.searchParams.set("toDate", evCtx.filterMaxDate.toISOString());
@@ -24,7 +63,7 @@ export function useFilter() {
 
     if (evCtx.filterCategories.length) {
       for (const cat of evCtx.filterCategories) {
-        url.searchParams.append("categories[]", cat);
+        url.searchParams.append("categories", cat);
       }
     }
 
@@ -60,8 +99,8 @@ export function useFilter() {
         url.searchParams.append("priorityOrder[]", value);
       }
     }
-
-    return fetchEvents(url);
+    console.log("URL", url);
+    return fetchEvents(custom);
   });
 
   return {

@@ -1,7 +1,6 @@
 import { AD_STEP } from "~/constants";
 import type { TEvent } from "~/types";
 
-
 // https://api.vamoo.la/v1/events?toDate=2024-08-19T11:22:36.871&geoLocation=0,0&distance=1km
 // https://api.vamoo.la/v1/events?toDate=2024-08-19T11:22:36.871&geoLocation=-1.28419,36.81559&distance=1km
 // https://api.vamoo.la/v1/events?search_after%5B%5D=0.0793509&search_after%5B%5D=1102&toDate=2024-08-19T11:22:36.871&geoLocation=-1.28419,36.81559&distance=1km
@@ -324,7 +323,7 @@ import type { TEvent } from "~/types";
 //       ]
 //   }
 // }
-export async function fetchEvents(url: URL) {
+export async function fetchEvents(url: any) {
   try {
     const response = await fetch(url);
 
