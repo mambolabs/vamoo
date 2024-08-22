@@ -42,8 +42,8 @@ export const useEvents = routeLoader$(async () => {
 });
 
 const sidebarLinks: { name: string; href: string }[] = [
-  { name: "Terms of Service", href: "#terms-of-service" },
-  { name: "Privacy Policy", href: "#privacy-policy" },
+  { name: "Terms of Service", href: "/terms-of-service" },
+  { name: "Privacy Policy", href: "/privacy-policy" },
 ];
 
 export default component$(() => {
@@ -133,6 +133,7 @@ export default component$(() => {
             <a
               key={link.name + index}
               href={link.href}
+              target="_blank"
               class="block font-semibold capitalize text-[#2d2d2d]"
             >
               {link.name}
