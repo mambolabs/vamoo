@@ -359,7 +359,11 @@ export default component$(() => {
               <button
                 type="button"
                 class="rounded-full border border-black px-4 py-1 text-sm font-semibold"
-                onClick$={() => (hideFilters.value = false)}
+                onClick$={() => {
+                  evCtx.coord.longitude = 0;
+                  evCtx.coord.latitude = 0;
+                  hideFilters.value = false;
+                }}
               >
                 +{filtersCount.value} Filtros
               </button>
@@ -397,7 +401,7 @@ export default component$(() => {
             </>
           )}
         </div>
-        <div class="flex items-center justify-between bg-black max-lg:p-2.5 lg:bg-white">
+        <div class="mobile-header top-0 z-50 flex items-center justify-between bg-black max-lg:p-2.5 lg:bg-white">
           <div class="flex items-center gap-2 lg:hidden">
             <button type="button" class="text-white">
               <svg

@@ -19,6 +19,8 @@ export function useFilter() {
       geoLocation,
       distance,
       categories,
+      filterTags = null,
+      fresh = false,
     }: any) {
       const url = new URL(baseUrl);
       const params = url.searchParams;
@@ -33,7 +35,36 @@ export function useFilter() {
       params.append("distance", distance);
 
       // Add categories (as an array with [])
-      categories.forEach((category) => params.append("categories[]", category));
+      if (categories && categories.length > 0) {
+        categories.forEach((category: string) => params.append("categories[]", category));
+      }
+   
+      if (filterTags && filterTags.length >0) {
+        filterTags.forEach((tag: string) => params.append("tags[]", tag));
+      }
+
+      if (evCtx.events.length && !fresh) {
+        /**
+         *  search_after allows us to load more events after the last one
+         */
+  
+        const lastEvent = evCtx.events[evCtx.events.length - 1];
+
+        lastEvent._esMeta.sort.forEach((tag: string|number) => params.append("tags[]", tag.toString()));
+      }
+
+      if (
+        evCtx.priorityOrder.length &&
+        evCtx.filterCategories.length &&
+        evCtx.filterTags.length
+      ) {
+        /**
+         *  priorityOrder will be considered only if we have categories and tags
+         */
+        evCtx.priorityOrder.forEach((value: string|number) => params.append("tags[]", value.toString()));
+
+      }
+
 
       return url.toString();
     }
@@ -48,58 +79,13 @@ export function useFilter() {
         evCtx.coord.latitude.toString(),
       distance: `${evCtx.distance}km`,
       categories: evCtx.filterCategories,
+      filterTags:evCtx.filterTags,
+      fresh:fresh,
+      events:evCtx.events
     });
 
     console.log("TEST URL", custom);
-
-    const url = new URL(EVENTS_ENDPOINT);
-
-    url.searchParams.set("toDate", evCtx.filterMaxDate.toISOString());
-
-    url.searchParams.set(
-      "geoLocation",
-      evCtx.coord.longitude.toString() + "," + evCtx.coord.latitude.toString(),
-    );
-
-    if (evCtx.filterCategories.length) {
-      for (const cat of evCtx.filterCategories) {
-        url.searchParams.append("categories", cat);
-      }
-    }
-
-    if (evCtx.filterTags.length) {
-      for (const tag of evCtx.filterTags) {
-        url.searchParams.append("tags[]", tag);
-      }
-    }
-
-    url.searchParams.set("distance", `${evCtx.distance}km`);
-
-    if (evCtx.events.length && !fresh) {
-      /**
-       *  search_after allows us to load more events after the last one
-       */
-
-      const lastEvent = evCtx.events[evCtx.events.length - 1];
-
-      for (const value of lastEvent._esMeta.sort) {
-        url.searchParams.append("search_after[]", value.toString());
-      }
-    }
-
-    if (
-      evCtx.priorityOrder.length &&
-      evCtx.filterCategories.length &&
-      evCtx.filterTags.length
-    ) {
-      /**
-       *  priorityOrder will be considered only if we have categories and tags
-       */
-      for (const value of evCtx.priorityOrder) {
-        url.searchParams.append("priorityOrder[]", value);
-      }
-    }
-    console.log("URL", url);
+    
     return fetchEvents(custom);
   });
 

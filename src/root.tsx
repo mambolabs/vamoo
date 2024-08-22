@@ -75,6 +75,23 @@ export default component$(() => {
       <body lang="en">
         <RouterOutlet />
         <ServiceWorkerRegister />
+
+        <script
+          dangerouslySetInnerHTML="document.addEventListener('DOMContentLoaded', function() {
+  const stickyDiv = document.querySelector('.mobile-header');
+  const originalPosition = stickyDiv.offsetTop;
+
+  window.addEventListener('scroll', function() {
+    if (window.pageYOffset > originalPosition) {
+      stickyDiv.classList.add('fixed', 'top-0');
+      stickyDiv.style.width = stickyDiv.parentElement.clientWidth + 'px';
+    } else {
+      stickyDiv.classList.remove('fixed', 'top-0');
+      stickyDiv.style.width = '';
+    }
+  });
+});"
+        ></script>
       </body>
     </QwikCityProvider>
   );
